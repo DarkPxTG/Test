@@ -174,9 +174,9 @@
   #leaderboardButton:hover {
     transform: scale(1.2);
   }
-  #homeButton {
+  #settingsButton {
     position: absolute;
-    top: 65px; /* کمی پایین‌تر از 60px */
+    top: 65px;
     left: 20px;
     background: none;
     border: none;
@@ -186,10 +186,10 @@
     z-index: 3;
     text-shadow: 0 0 10px #ff3f3f;
   }
-  #homeButton:hover {
+  #settingsButton:hover {
     transform: scale(1.2);
   }
-  #leaderboard {
+  #leaderboard, #settingsMenu {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -206,16 +206,16 @@
     width: 80%;
     max-width: 400px;
   }
-  #leaderboard h2 {
+  #leaderboard h2, #settingsMenu h2 {
     font-size: 32px;
     margin: 0 0 20px;
     text-shadow: 0 0 10px #ff3f3f;
   }
-  #leaderboard p {
+  #leaderboard p, #settingsMenu p {
     font-size: 24px;
     margin: 10px 0;
   }
-  #leaderboard button {
+  #leaderboard button, #settingsMenu button {
     background: linear-gradient(45deg, #ff3f3f, #ff0000);
     color: #ffffff;
     font-size: 20px;
@@ -225,8 +225,23 @@
     cursor: pointer;
     margin-top: 20px;
   }
-  #leaderboard button:hover {
+  #leaderboard button:hover, #settingsMenu button:hover {
     transform: scale(1.1);
+  }
+  #settingsMenu select {
+    background: #333;
+    color: #fff;
+    border: 2px solid #ff3f3f;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 16px;
+    margin: 10px 0;
+    width: 80%;
+    cursor: pointer;
+  }
+  #settingsMenu select:focus {
+    outline: none;
+    border-color: #ffffff;
   }
 </style>
 </head>
@@ -237,7 +252,7 @@
 <div id="homeScreen">
   <div id="homeScreenContent">
     <button id="leaderboardButton">☰</button>
-    <button id="homeButton" title="Multiplayer Mode">🏠</button>
+    <button id="settingsButton" title="Settings">⚙️</button>
     <div id="gameTitle">Flappy Bird Pro</div>
     <button id="startButton">Start Game</button>
     <img id="floatingBird" src="https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png" alt="Floating Bird" />
@@ -251,6 +266,31 @@
   <p id="highScore">High Score: 0</p>
   <button id="closeLeaderboard">Close</button>
 </div>
+<div id="settingsMenu">
+  <h2>Settings</h2>
+  <p>Bird Speed:</p>
+  <select id="birdSpeed">
+    <option value="slow">Slow</option>
+    <option value="normal" selected>Normal</option>
+    <option value="fast">Fast</option>
+  </select>
+  <p>Fall/Fly Speed:</p>
+  <select id="fallFlySpeed">
+    <option value="slow">Slow</option>
+    <option value="normal" selected>Normal</option>
+    <option value="fast">Fast</option>
+  </select>
+  <p>Game Difficulty:</p>
+  <select id="gameDifficulty">
+    <option value="veryEasy">Very Easy</option>
+    <option value="easy">Easy</option>
+    <option value="normal" selected>Normal</option>
+    <option value="hard">Hard</option>
+    <option value="veryHard">Very Hard</option>
+  </select>
+  <button id="resetSettings">Reset to Default</button>
+  <button id="closeSettings">Close</button>
+</div>
 
 <script>
   const canvas = document.getElementById('gameCanvas');
@@ -262,9 +302,15 @@
   const bloodCanvas = document.getElementById('bloodOverlay');
   const bloodCtx = bloodCanvas.getContext('2d');
   const leaderboardButton = document.getElementById('leaderboardButton');
-  const homeButton = document.getElementById('homeButton');
+  const settingsButton = document.getElementById('settingsButton');
   const leaderboard = document.getElementById('leaderboard');
   const closeLeaderboard = document.getElementById('closeLeaderboard');
+  const settingsMenu = document.getElementById('settingsMenu');
+  const closeSettings = document.getElementById('closeSettings');
+  const resetSettings = document.getElementById('resetSettings');
+  const birdSpeedSelect = document.getElementById('birdSpeed');
+  const fallFlySpeedSelect = document.getElementById('fallFlySpeed');
+  const gameDifficultySelect = document.getElementById('gameDifficulty');
   const currentScoreDisplay = document.getElementById('currentScore');
   const highScoreDisplay = document.getElementById('highScore');
 
@@ -273,11 +319,12 @@
   let gameOver = false;
   let bird;
   let obstacles = [];
-  let speed = 2.5;
+  let speed = 2.5; // پیش‌فرض: Normal
   let score = 0;
   let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
   let difficultyIncrement = 0;
-  let maxDifficulty = 3;
+  let maxDifficulty = 3; // پیش‌فرض: Normal
+  let minGap = 80; // پیش‌فرض: Normal
   let loadingDuration = 3000;
   let bloodParticles = [];
   let birdImage = new Image();
@@ -285,6 +332,79 @@
   let startTime = 0;
   let inHomeScreen = false;
   let isGameActive = false;
+
+  // تنظیمات پیش‌فرض
+  const defaultSettings = {
+    birdSpeed: 'normal',
+    fallFlySpeed: 'normal',
+    gameDifficulty: 'normal'
+  };
+
+  // بارگذاری تنظیمات از localStorage یا استفاده از پیش‌فرض
+  let settings = JSON.parse(localStorage.getItem('flappyBirdSettings')) || defaultSettings;
+  applySettings();
+
+  function applySettings() {
+    // Bird Speed
+    switch (settings.birdSpeed) {
+      case 'slow': speed = 1.5; break;
+      case 'normal': speed = 2.5; break;
+      case 'fast': speed = 3.5; break;
+    }
+    birdSpeedSelect.value = settings.birdSpeed;
+
+    // Fall/Fly Speed
+    if (bird) {
+      switch (settings.fallFlySpeed) {
+        case 'slow':
+          bird.gravity = 0.2;
+          bird.lift = -5;
+          break;
+        case 'normal':
+          bird.gravity = 0.3;
+          bird.lift = -6;
+          break;
+        case 'fast':
+          bird.gravity = 0.4;
+          bird.lift = -7;
+          break;
+      }
+    }
+    fallFlySpeedSelect.value = settings.fallFlySpeed;
+
+    // Game Difficulty
+    switch (settings.gameDifficulty) {
+      case 'veryEasy':
+        maxDifficulty = 1;
+        minGap = 100;
+        break;
+      case 'easy':
+        maxDifficulty = 2;
+        minGap = 90;
+        break;
+      case 'normal':
+        maxDifficulty = 3;
+        minGap = 80;
+        break;
+      case 'hard':
+        maxDifficulty = 4;
+        minGap = 70;
+        break;
+      case 'veryHard':
+        maxDifficulty = 5;
+        minGap = 60;
+        break;
+    }
+    gameDifficultySelect.value = settings.gameDifficulty;
+
+    // ذخیره تنظیمات
+    localStorage.setItem('flappyBirdSettings', JSON.stringify(settings));
+  }
+
+  function resetSettingsToDefault() {
+    settings = { ...defaultSettings };
+    applySettings();
+  }
 
   function resize() {
     W = window.innerWidth;
@@ -303,6 +423,7 @@
       canvas.style.display = 'none';
       bloodCanvas.style.display = 'none';
       leaderboard.style.display = 'none';
+      settingsMenu.style.display = 'none';
       return false;
     } else {
       rotateScreen.style.display = 'none';
@@ -322,10 +443,11 @@
       this.x = W / 4;
       this.y = H / 2;
       this.velocity = 0;
-      this.gravity = 0.3;
-      this.lift = -6;
+      this.gravity = 0.3; // پیش‌فرض: Normal
+      this.lift = -6; // پیش‌فرض: Normal
       this.isMoving = false;
       this.dead = false;
+      applySettings(); // اعمال تنظیمات برای gravity و lift
     }
     update() {
       if (!this.isMoving) return;
@@ -391,7 +513,7 @@
         this.x = W + 400 + Math.random() * 200;
         let baseHeight = Math.random() * (H - this.gap - 100) + 50;
         this.heightTop = Math.min(baseHeight + difficultyIncrement * 10, H - this.gap - 40);
-        this.gap = Math.max(80, 120 - difficultyIncrement * 5);
+        this.gap = Math.max(minGap, 120 - difficultyIncrement * 5);
         this.speed = Math.min(4, speed + difficultyIncrement * 0.2);
         score++;
         if (score % 3 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement += 0.5;
@@ -586,10 +708,10 @@
     gameOver = false;
     score = 0;
     difficultyIncrement = 0;
-    speed = 2.5;
     startTime = performance.now();
     homeScreen.style.display = 'none';
     leaderboard.style.display = 'none';
+    settingsMenu.style.display = 'none';
     inHomeScreen = false;
     isGameActive = false;
 
@@ -679,16 +801,16 @@
     }
   });
 
-  homeButton.addEventListener('click', () => {
+  settingsButton.addEventListener('click', () => {
     if (inHomeScreen) {
-      alert('Multiplayer mode will be added soon!');
+      settingsMenu.style.display = 'block';
     }
   });
 
-  homeButton.addEventListener('touchstart', e => {
+  settingsButton.addEventListener('touchstart', e => {
     e.preventDefault();
     if (inHomeScreen) {
-      alert('Multiplayer mode will be added soon!');
+      settingsMenu.style.display = 'block';
     }
   });
 
@@ -699,6 +821,39 @@
   closeLeaderboard.addEventListener('touchstart', e => {
     e.preventDefault();
     leaderboard.style.display = 'none';
+  });
+
+  closeSettings.addEventListener('click', () => {
+    settingsMenu.style.display = 'none';
+  });
+
+  closeSettings.addEventListener('touchstart', e => {
+    e.preventDefault();
+    settingsMenu.style.display = 'none';
+  });
+
+  resetSettings.addEventListener('click', () => {
+    resetSettingsToDefault();
+  });
+
+  resetSettings.addEventListener('touchstart', e => {
+    e.preventDefault();
+    resetSettingsToDefault();
+  });
+
+  birdSpeedSelect.addEventListener('change', () => {
+    settings.birdSpeed = birdSpeedSelect.value;
+    applySettings();
+  });
+
+  fallFlySpeedSelect.addEventListener('change', () => {
+    settings.fallFlySpeed = fallFlySpeedSelect.value;
+    applySettings();
+  });
+
+  gameDifficultySelect.addEventListener('change', () => {
+    settings.gameDifficulty = gameDifficultySelect.value;
+    applySettings();
   });
 
   let orientationChanged = false;
