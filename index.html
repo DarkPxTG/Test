@@ -24,43 +24,22 @@
     position: fixed; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.8);
-    color: #00ff00;
-    font-size: 32px; font-weight: 900;
+    color: #ffffff;
+    font-size: 28px; font-weight: 700;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 20px 40px;
-    border-radius: 15px;
-    border: 4px solid #00ff00;
+    padding: 15px 30px;
+    border-radius: 10px;
+    border: 2px solid #ffffff;
     user-select: none;
     z-index: 1200;
     pointer-events: none;
     text-align: center;
-    text-shadow: 
-      0 0 10px #00ff00, 
-      0 0 20px #00ff00, 
-      0 0 30px #00ff00;
-    animation: neonGlow 1s ease-in-out infinite;
     text-transform: uppercase;
-  }
-  @keyframes neonGlow {
-    0%, 100% { 
-      text-shadow: 
-        0 0 10px #00ff00, 
-        0 0 20px #00ff00, 
-        0 0 30px #00ff00;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    50% { 
-      text-shadow: 
-        0 0 20px #00ff00, 
-        0 0 40px #00ff00, 
-        0 0 60px #00ff00;
-      transform: translate(-50%, -50%) scale(1.1);
-    }
   }
   #homeScreen {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_3m3r.jpg') no-repeat center center;
-    background-size: cover;
+    background-size menti: cover;
     display: none;
     z-index: 1100;
     text-align: center;
@@ -272,7 +251,7 @@
     <button id="settingsButton" title="Settings">⚙️</button>
     <div id="gameTitle">Flappy Bird Pro</div>
     <button id="startButton">Start Game</button>
-    <img id="floatingBird" src="https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png" alt="Floating Bird" />
+    <img id="floatingBird" src="https://s6.uupload.ir/files/hd-cartoon-halloween-ghost-scary-face-png-701751694865374drzx90dpmq_e8ew.png" alt="Floating Ghost" />
   </div>
 </div>
 <div id="loading"></div>
@@ -331,7 +310,7 @@
   let loadingDuration = 3000;
   let bloodParticles = [];
   let birdImage = new Image();
-  birdImage.src = 'https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png';
+  birdImage.src = 'https://s6.uupload.ir/files/hd-cartoon-halloween-ghost-scary-face-png-701751694865374drzx90dpmq_e8ew.png';
   let startTime = 0;
   let inHomeScreen = false;
   let isGameActive = false;
@@ -674,7 +653,7 @@
     const elapsedTime = Math.floor((performance.now() - startTime) / 1000);
     ctx.save();
     ctx.fillStyle = '#ffffff';
-    ctx.font = '36px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif'; // Increased font size
+    ctx.font = '36px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${elapsedTime}s`, W / 2, 30);
@@ -890,4 +869,4 @@
 </script>
 
 </body>
-</html>
+  </html>
