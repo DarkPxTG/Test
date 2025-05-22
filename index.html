@@ -3,38 +3,50 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<title>Flappy Bird افقی با برخورد و Game Over</title>
+<title>Flappy Bird افقی جهنمی</title>
 <style>
   html, body {
     margin: 0; padding: 0; overflow: hidden; height: 100%;
     background: #000;
-    font-family: Arial, sans-serif;
+    font-family: 'Vazir', Arial, sans-serif;
     direction: rtl;
   }
   #rotateMsg {
     position: fixed;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    color: white;
-    font-size: 24px;
-    background: rgba(0,0,0,0.7);
-    padding: 20px 30px;
-    border-radius: 10px;
-    display: none;
-    z-index: 1000;
+    color: #FF4500;
+    font-size: 28px;
+    background: rgba(0,0,0,0.85);
+    padding: 25px 40px;
+    border-radius: 15px;
     text-align: center;
+    display: none;
+    z-index: 2000;
+    box-shadow: 0 0 15px #FF4500;
+    animation: pulse 1.5s infinite alternate;
+  }
+  @keyframes pulse {
+    0% { text-shadow: 0 0 5px #FF4500; }
+    100% { text-shadow: 0 0 20px #FF6347; }
   }
   canvas {
     display: block;
-    margin: 0 auto;
-    background-color: #000;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
     image-rendering: crisp-edges;
+    background: black;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 </style>
 </head>
 <body>
 
-<div id="rotateMsg">لطفاً گوشی خود را به حالت افقی (Landscape) بچرخانید</div>
+<div id="rotateMsg">لطفاً گوشی خود را به حالت افقی (Landscape) بچرخانید<br>و بازی را از ابتدا لمس کنید</div>
 <canvas id="gameCanvas"></canvas>
 
 <script>
@@ -46,33 +58,60 @@ let gameOver = false;
 let gameStarted = false;
 let animationId;
 
-const BG_IMG_SRC = "https://s6.uupload.ir/files/how-would-you-describe-this-angry-birds-background-v0-9rpwenf2y3nd1_0nx2.png";
-let bgImg = new Image();
-bgImg.src = BG_IMG_SRC;
+const WIDTH = window.innerWidth;
+const HEIGHT = window.innerHeight;
 
-function setCanvasSize() {
-  if(window.innerWidth < window.innerHeight){
-    // صفحه عمودی هست
-    rotateMsg.style.display = "block";
-    canvas.style.display = "none";
-    cancelAnimationFrame(animationId);
-    gameStarted = false;
-  } else {
-    rotateMsg.style.display = "none";
-    canvas.style.display = "block";
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    if(!gameStarted) {
-      initGame();
-      gameStarted = true;
-      gameOver = false;
-      gameLoop();
-    }
+let scaleRatio = 1;
+
+// پس زمینه جهنمی (گرادیانت)
+function drawHellBackground() {
+  let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  gradient.addColorStop(0, '#8B0000');
+  gradient.addColorStop(0.5, '#FF4500');
+  gradient.addColorStop(1, '#330000');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // دود پراکنده
+  for(let i = 0; i < 15; i++){
+    let x = (Math.sin(Date.now()/1000 + i)*0.5+0.5) * canvas.width;
+    let y = (i / 15) * canvas.height * 1.2;
+    let radius = 60 + 40 * Math.sin(Date.now()/700 + i);
+    let alpha = 0.05 + 0.1 * Math.sin(Date.now()/900 + i*2);
+    let grd = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    grd.addColorStop(0, `rgba(200, 50, 20, ${alpha})`);
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.ellipse(x, y, radius*1.5, radius, 0, 0, 2*Math.PI);
+    ctx.fill();
   }
 }
 
-window.addEventListener("resize", setCanvasSize);
-setCanvasSize();
+class BloodDrop {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.radius = 4 + Math.random() * 3;
+    this.speedX = (Math.random() - 0.5) * 3;
+    this.speedY = Math.random() * 5 + 2;
+    this.opacity = 1;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    this.opacity -= 0.05;
+  }
+  draw() {
+    ctx.fillStyle = `rgba(150, 0, 0, ${this.opacity})`;
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, this.radius * 0.7, this.radius, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  isDead() {
+    return this.opacity <= 0;
+  }
+}
 
 class Obstacle {
   constructor(x, y, width, height, speed) {
@@ -81,21 +120,33 @@ class Obstacle {
     this.width = width;
     this.height = height;
     this.speed = speed;
-    this.radius = 15; // برای گرد کردن گوشه‌ها
+    this.radius = 15;
   }
   update() {
     this.x -= this.speed;
     if (this.x + this.width < 0) {
-      this.x = canvas.width + Math.random() * 200;
+      this.x = canvas.width + Math.random() * 300;
       this.y = Math.random() * (canvas.height - 150) + 50;
       this.height = 40 + Math.random() * 100;
     }
   }
   draw() {
-    ctx.fillStyle = "#228B22";
-    // رسم مستطیل با گوشه گرد
-    const r = this.radius;
-    const x = this.x, y = this.y, w = this.width, h = this.height;
+    // موانع با سایه و ترکیب رنگ جهنمی
+    let r = this.radius;
+    let x = this.x, y = this.y, w = this.width, h = this.height;
+
+    // سایه قرمز تیره
+    let shadowColor = 'rgba(139,0,0,0.8)';
+    ctx.shadowColor = shadowColor;
+    ctx.shadowBlur = 15;
+
+    let grd = ctx.createLinearGradient(x, y, x+w, y+h);
+    grd.addColorStop(0, '#FF3300');
+    grd.addColorStop(0.5, '#800000');
+    grd.addColorStop(1, '#330000');
+
+    ctx.fillStyle = grd;
+
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
@@ -108,28 +159,34 @@ class Obstacle {
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
     ctx.fill();
+
+    ctx.shadowBlur = 0; // غیرفعال کردن سایه
   }
 }
 
 class Bird {
   constructor() {
-    this.x = canvas.width / 5;
+    this.x = canvas.width / 2; // وسط صفحه (اولین موقعیت)
     this.y = canvas.height / 2;
-    this.radiusX = 20; // برای بیضی بزرگ‌تر
-    this.radiusY = 15;
+    this.radiusX = 25;
+    this.radiusY = 18;
     this.gravity = 0.6;
     this.lift = -12;
     this.velocity = 0;
     this.opacity = 1;
+    this.isDead = false;
   }
   update() {
+    if(!gameStarted) return; // وقتی بازی شروع نشده حرکت نکنه
     this.velocity += this.gravity;
     this.y += this.velocity;
 
     if(this.y + this.radiusY > canvas.height){
       this.y = canvas.height - this.radiusY;
       this.velocity = 0;
+      this.isDead = true;
       gameOver = true;
+      spawnBlood(this.x, this.y);
     }
     if(this.y - this.radiusY < 0){
       this.y = this.radiusY;
@@ -139,7 +196,12 @@ class Bird {
   draw() {
     ctx.save();
     ctx.globalAlpha = this.opacity;
-    ctx.fillStyle = "#FF4500";
+
+    // بدن پرنده
+    let grd = ctx.createRadialGradient(this.x, this.y, this.radiusX, this.x, this.y, this.radiusX/2);
+    grd.addColorStop(0, '#FF4500');
+    grd.addColorStop(1, '#800000');
+    ctx.fillStyle = grd;
     ctx.beginPath();
     ctx.ellipse(this.x, this.y, this.radiusX, this.radiusY, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -153,11 +215,15 @@ class Bird {
     ctx.restore();
   }
   flap() {
-    this.velocity = this.lift;
+    if(!gameStarted){
+      gameStarted = true; 
+      // وقتی بازی شروع شد پرنده شروع می‌کنه حرکت
+    }
+    if(!gameOver) this.velocity = this.lift;
   }
   fadeOut() {
     if(this.opacity > 0){
-      this.opacity -= 0.02;
+      this.opacity -= 0.03;
       if(this.opacity < 0) this.opacity = 0;
     }
   }
@@ -165,105 +231,160 @@ class Bird {
 
 let bird;
 let obstacles = [];
+let bloodDrops = [];
+
+function spawnBlood(x, y) {
+  for(let i=0; i<15; i++){
+    bloodDrops.push(new BloodDrop(x + (Math.random()-0.5)*20, y + (Math.random()-0.5)*20));
+  }
+}
 
 function initGame() {
   bird = new Bird();
   obstacles = [];
-  for(let i = 0; i < 4; i++){
-    let x = canvas.width + i * 300;
+  bloodDrops = [];
+  gameOver = false;
+  gameStarted = false;
+  bird.opacity = 1;
+
+  for(let i = 0; i < 5; i++){
+    let x = canvas.width + i * 280;
     let y = Math.random() * (canvas.height - 150) + 50;
-    let height = 40 + Math.random() * 100;
-    obstacles.push(new Obstacle(x, y, 50, height, 4));
+    let height = 50 + Math.random() * 90;
+    obstacles.push(new Obstacle(x, y, 55, height, 4));
   }
 }
 
-function checkCollision(bird, obstacle) {
-  // برخورد بیضی پرنده با مستطیل گرد (approximate)
-  // روش ساده: بررسی برخورد دایره به مستطیل با radius متوسط
-  let cx = bird.x;
-  let cy = bird.y;
-  let rw = obstacle.width;
-  let rh = obstacle.height;
-  let rx = obstacle.x;
-  let ry = obstacle.y;
+// چک کردن برخورد
+function checkCollision() {
+  for(let obs of obstacles){
+    let distX = Math.abs(bird.x - (obs.x + obs.width / 2));
+    let distY = Math.abs(bird.y - (obs.y + obs.height / 2));
 
-  // نزدیک‌ترین نقطه روی مستطیل به مرکز پرنده
-  let nearestX = Math.max(rx, Math.min(cx, rx + rw));
-  let nearestY = Math.max(ry, Math.min(cy, ry + rh));
-
-  // فاصله به مرکز پرنده
-  let dx = cx - nearestX;
-  let dy = cy - nearestY;
-
-  let radius = (bird.radiusX + bird.radiusY) / 2; // متوسط شعاع پرنده
-
-  return (dx * dx + dy * dy) < (radius * radius);
-}
-
-function drawBackground(){
-  // تصویر را با حفظ نسبت و پوشش کل صفحه می‌کشیم (contain)
-  // پس زمینه سیاه گذاشتیم که اطراف تصویر مشکی باشه
-  let scaleX = canvas.width / bgImg.width;
-  let scaleY = canvas.height / bgImg.height;
-  let scale = Math.min(scaleX, scaleY);
-  let imgWidth = bgImg.width * scale;
-  let imgHeight = bgImg.height * scale;
-  let dx = (canvas.width - imgWidth) / 2;
-  let dy = (canvas.height - imgHeight) / 2;
-  ctx.drawImage(bgImg, dx, dy, imgWidth, imgHeight);
-}
-
-function showGameOver(){
-  ctx.fillStyle = "rgba(0,0,0,0.6)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "#fff";
-  ctx.font = "bold 60px Vazir, Arial, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("Game Over", canvas.width/2, canvas.height/2);
-}
-
-function gameLoop(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawBackground();
-
-  obstacles.forEach(obs => {
-    obs.update();
-    obs.draw();
-    if(!gameOver && checkCollision(bird, obs)){
-      gameOver = true;
+    if(distX <= bird.radiusX + obs.width/2 && distY <= bird.radiusY + obs.height/2){
+      if(!bird.isDead){
+        bird.isDead = true;
+        gameOver = true;
+        spawnBlood(bird.x, bird.y);
+      }
     }
-  });
+  }
+}
+
+function drawGameOver() {
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#FF4500";
+  ctx.font = "bold 48px Vazir, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("بازی تمام شد!", canvas.width / 2, canvas.height / 2 - 40);
+
+  ctx.font = "24px Vazir, sans-serif";
+  ctx.fillText("برای شروع مجدد صفحه را لمس کنید", canvas.width / 2, canvas.height / 2 + 20);
+
+  ctx.restore();
+}
+
+// لرزش صفحه هنگام برخورد
+function shakeScreen(duration = 500) {
+  let start = Date.now();
+  let amplitude = 10;
+  function shake() {
+    let elapsed = Date.now() - start;
+    if(elapsed > duration){
+      canvas.style.transform = '';
+      return;
+    }
+    let x = (Math.random() - 0.5) * amplitude;
+    let y = (Math.random() - 0.5) * amplitude;
+    canvas.style.transform = `translate(${x}px, ${y}px)`;
+    requestAnimationFrame(shake);
+  }
+  shake();
+}
+
+// چک کردن جهت گوشی
+function checkOrientation() {
+  if(window.innerWidth < window.innerHeight){
+    rotateMsg.style.display = "block";
+    canvas.style.display = "none";
+    return false;
+  }
+  else {
+    rotateMsg.style.display = "none";
+    canvas.style.display = "block";
+    return true;
+  }
+}
+
+// اندازه صفحه را تنظیم کن
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function gameLoop() {
+  if(!checkOrientation()){
+    cancelAnimationFrame(animationId);
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawHellBackground();
 
   bird.update();
   bird.draw();
 
+  for(let obs of obstacles){
+    if(gameStarted && !gameOver) obs.update();
+    obs.draw();
+  }
+
+  for(let i = bloodDrops.length - 1; i >= 0; i--) {
+    let b = bloodDrops[i];
+    b.update();
+    b.draw();
+    if(b.isDead()) bloodDrops.splice(i, 1);
+  }
+
+  if(gameStarted && !gameOver) checkCollision();
+
   if(gameOver){
     bird.fadeOut();
-    showGameOver();
-    if(bird.opacity <= 0){
-      cancelAnimationFrame(animationId);
-      // بعد از چند ثانیه بازی ریست میشه
-      setTimeout(() => {
-        initGame();
-        gameOver = false;
-        bird.opacity = 1;
-        gameLoop();
-      }, 2000);
-      return;
-    }
+    drawGameOver();
   }
 
   animationId = requestAnimationFrame(gameLoop);
 }
 
-canvas.addEventListener("touchstart", e => {
-  e.preventDefault();
-  if(!gameOver) bird.flap();
-}, {passive: false});
-
-canvas.addEventListener("mousedown", e => {
-  if(!gameOver) bird.flap();
+window.addEventListener("resize", () => {
+  resizeCanvas();
+  scaleRatio = canvas.width / WIDTH;
 });
+
+window.addEventListener("touchstart", e => {
+  e.preventDefault();
+  if(gameOver){
+    initGame();
+  }
+  bird.flap();
+});
+
+window.addEventListener("mousedown", e => {
+  e.preventDefault();
+  if(gameOver){
+    initGame();
+  }
+  bird.flap();
+});
+
+// شروع بازی
+resizeCanvas();
+initGame();
+gameLoop();
+
 </script>
 
 </body>
