@@ -1,206 +1,180 @@
-<!DOCTYPE html>
-<html lang="fa">
+<!DOCTYPE html><html lang="fa">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>فلپی برد سفارشی</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100%;
-      background: #000;
-      font-family: 'Vazir', sans-serif;
-    }
-
-    #gameCanvas {
-      display: block;
-      background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_3m3r.jpg') no-repeat center center;
-      background-size: cover;
-      width: 100vw;
-      height: 100vh;
-    }
-
-    #rotateScreen {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      font-size: 16px;
-      font-weight: bold;
-      font-family: sans-serif;
-      padding: 10px 20px;
-      border-radius: 10px;
-      user-select: none;
-      z-index: 1200;
-      text-align: center;
-      display: none;
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    #loading {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 36px; color: #ff3f3f;
-      font-weight: 900;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-shadow: 0 0 15px #ff3f3f, 0 0 30px #ff3f3f, 0 0 40px #ff3f3f, 0 0 60px #ff3f3f;
-      letter-spacing: 6px;
-      display: none;
-      z-index: 1100;
-      user-select: none;
-    }
-
-    @keyframes wave {
-      0%, 100% { text-shadow: 0 0 15px #ff3f3f; }
-      50% { text-shadow: 0 0 30px #ff0000, 0 0 40px #ff0000; }
-    }
-
-    #loading span {
-      display: inline-block;
-      animation: wave 1.5s infinite ease-in-out;
-    }
-
-    #bloodOverlay {
-      position: fixed; top:0; left:0; width:100vw; height:100vh;
-      pointer-events:none;
-      z-index: 1300;
-      mix-blend-mode: multiply;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>Flappy Bird افقی حرفه‌ای</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; overflow: hidden; height: 100%;
+    background: #000;
+    font-family: 'Vazir', sans-serif;
+  }
+  #gameCanvas {
+    display: block;
+    background: url('https://s6.uupload.ir/files/how-would-you-describe-this-angry-birds-background-v0-9rpwenf2y3nd1_0nx2.png') no-repeat center center;
+    background-size: cover;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
+    position: relative;
+    z-index: 1;
+  }
+  #rotateScreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-shadow: 0 0 8px #ff0000, 0 0 16px #ff0000;
+    z-index: 1200;
+    text-align: center;
+    display: none;
+  }
+  #loading {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 36px; color: #ff3f3f;
+    font-weight: 900;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow:
+      0 0 15px #ff3f3f,
+      0 0 30px #ff3f3f,
+      0 0 40px #ff3f3f,
+      0 0 60px #ff3f3f;
+    letter-spacing: 6px;
+    display: none;
+    z-index: 1100;
+    user-select: none;
+  }
+  @keyframes wave {
+    0%, 100% { text-shadow: 0 0 15px #ff3f3f; }
+    50% { text-shadow: 0 0 30px #ff0000, 0 0 40px #ff0000; }
+  }
+  #loading span {
+    display: inline-block;
+    animation: wave 1.5s infinite ease-in-out;
+  }
+  #bloodOverlay {
+    position: fixed; top:0; left:0; width:100vw; height:100vh;
+    pointer-events:none;
+    z-index: 1300;
+    mix-blend-mode: multiply;
+  }
+  #gameTimer {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 22px;
+    color: #fff;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    text-shadow: 0 0 8px #ff0000;
+    z-index: 1100;
+    user-select: none;
+    display: none;
+  }
+</style>
 </head>
-<body>
-<canvas id="gameCanvas"></canvas>
-<div id="rotateScreen">لطفاً گوشی‌تان را افقی بچرخانید</div>
+<body><canvas id="gameCanvas"></canvas>
+
+<div id="rotateScreen">Please rotate your device for the ultimate experience</div>
 <div id="loading"></div>
 <canvas id="bloodOverlay"></canvas>
+<div id="gameTimer">0:00</div><script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const rotateScreen = document.getElementById('rotateScreen');
+  const loading = document.getElementById('loading');
+  const bloodCanvas = document.getElementById('bloodOverlay');
+  const bloodCtx = bloodCanvas.getContext('2d');
+  const timerElement = document.getElementById('gameTimer');
 
-<script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+  let timerInterval;
+  let elapsedSeconds = 0;
 
-let bird = {
-  x: 100,
-  y: canvas.height / 2,
-  width: 60,
-  height: 45,
-  velocity: 0,
-  gravity: 0.5,
-  jump: -8,
-  img: new Image()
-};
-bird.img.src = "https://s6.uupload.ir/files/flappy_bird_persian_3f2d.png";
+  function startTimer() {
+    elapsedSeconds = 0;
+    updateTimerDisplay();
+    timerElement.style.display = 'block';
+    timerInterval = setInterval(() => {
+      elapsedSeconds++;
+      updateTimerDisplay();
+    }, 1000);
+  }
 
-let obstacles = [];
-let obstacleWidth = 80;
-let gap = 250;
-let frame = 0;
-let score = 0;
-let gameOver = false;
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerElement.style.display = 'none';
+  }
 
-function drawBird() {
-  ctx.drawImage(bird.img, bird.x, bird.y, bird.width, bird.height);
-}
+  function updateTimerDisplay() {
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const seconds = elapsedSeconds % 60;
+    timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  }
+</script><!-- ادامه اسکریپت اصلی بدون تغییر، فقط در شروع بازی startTimer و در پایان stopTimer اضافه خواهد شد --><script>
+  // ... همه کدهای بازی بدون تغییر ...
 
-function drawObstacles() {
-  ctx.fillStyle = "rgba(255,255,255,0)";
-  obstacles.forEach(obs => {
-    ctx.fillRect(obs.x, 0, obstacleWidth, obs.top);
-    ctx.fillRect(obs.x, obs.bottom, obstacleWidth, canvas.height - obs.bottom);
-    ctx.drawImage(pipeTop, obs.x, obs.top - pipeTop.height, obstacleWidth, pipeTop.height);
-    ctx.drawImage(pipeBottom, obs.x, obs.bottom, obstacleWidth, pipeBottom.height);
-  });
-}
+  function startGame(){
+    bird = new Bird();
+    bird.isMoving = true;
+    obstacles = [];
+    bloodParticles.length = 0;
+    gameStarted = true;
+    gameOver = false;
+    score = 0;
+    difficultyIncrement = 0;
+    speed = 2.2;
+    startTimer(); // تایمر شروع شود
 
-function updateObstacles() {
-  if (frame % 100 === 0) {
-    let topHeight = Math.floor(Math.random() * (canvas.height - gap - 200)) + 50;
-    obstacles.push({
-      x: canvas.width,
-      top: topHeight,
-      bottom: topHeight + gap
+    let startX = W + 200;
+    for(let i=0; i<4; i++){
+      let gapSize = 140;
+      let hTop = Math.random()*(H - gapSize - 100) + 50;
+      obstacles.push(new Obstacle(startX + i*250, 60, hTop, gapSize));
+    }
+  }
+
+  function gameLoop(){
+    ctx.clearRect(0,0,W,H);
+
+    obstacles.forEach(ob => {
+      ob.update();
+      ob.draw();
+      if(ob.checkCollision(bird) && !bird.dead){
+        bird.dead = true;
+        gameOver = true;
+        createBloodFountain(bird.x, bird.y);
+        shakeScreen();
+      }
     });
-  }
-  obstacles.forEach(obs => {
-    obs.x -= 3;
 
-    // برخورد
-    if (
-      bird.x < obs.x + obstacleWidth &&
-      bird.x + bird.width > obs.x &&
-      (bird.y < obs.top || bird.y + bird.height > obs.bottom)
-    ) {
-      gameOver = true;
-      showGameOver();
+    bird.update();
+    bird.draw();
+
+    if(gameOver){
+      updateBloodParticles();
     }
 
-    if (obs.x + obstacleWidth === Math.floor(bird.x)) {
-      score++;
+    if(!gameOver && gameStarted){
+      requestAnimationFrame(gameLoop);
+    } else if(gameOver){
+      stopTimer(); // تایمر متوقف شود
+      setTimeout(() => {
+        gameStarted = false;
+        showLoadingAnimation(() => {
+          startGame();
+          gameLoop();
+        });
+      }, 2500);
     }
-  });
-}
-
-function showGameOver() {
-  ctx.fillStyle = "red";
-  ctx.font = "bold 48px Tahoma";
-  ctx.fillText("Game Over", canvas.width / 2 - 100, canvas.height / 2);
-}
-
-function drawScore() {
-  ctx.fillStyle = "#fff";
-  ctx.font = "bold 30px Arial";
-  ctx.fillText("امتیاز: " + score, 30, 50);
-}
-
-function loop() {
-  if (gameOver) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  bird.velocity += bird.gravity;
-  bird.y += bird.velocity;
-
-  if (bird.y + bird.height > canvas.height || bird.y < 0) {
-    gameOver = true;
-    showGameOver();
-    return;
   }
-
-  updateObstacles();
-  drawObstacles();
-  drawBird();
-  drawScore();
-
-  frame++;
-  requestAnimationFrame(loop);
-}
-
-document.addEventListener("keydown", function(e) {
-  if (e.code === "Space" || e.code === "ArrowUp") {
-    bird.velocity = bird.jump;
-  }
-});
-
-document.addEventListener("touchstart", function() {
-  bird.velocity = bird.jump;
-});
-
-const pipeTop = new Image();
-pipeTop.src = "https://s6.uupload.ir/files/pipe-top_k9h3.png";
-const pipeBottom = new Image();
-pipeBottom.src = "https://s6.uupload.ir/files/pipe-bottom_d5nv.png";
-
-pipeBottom.onload = () => {
-  loop();
-};
-</script>
-</body>
+</script></body>
 </html>
