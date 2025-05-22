@@ -3,58 +3,76 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<title>Flappy Bird افقی</title>
+<title>Flappy Bird افقی با برخورد و Game Over</title>
 <style>
   html, body {
     margin: 0; padding: 0; overflow: hidden; height: 100%;
-    background: #87ceeb;
+    background: #000;
+    font-family: Arial, sans-serif;
+    direction: rtl;
+  }
+  #rotateMsg {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 24px;
+    background: rgba(0,0,0,0.7);
+    padding: 20px 30px;
+    border-radius: 10px;
+    display: none;
+    z-index: 1000;
+    text-align: center;
   }
   canvas {
     display: block;
-    background: #000;
-    touch-action: none;
+    margin: 0 auto;
+    background-color: #000;
+    image-rendering: crisp-edges;
   }
 </style>
 </head>
 <body>
+
+<div id="rotateMsg">لطفاً گوشی خود را به حالت افقی (Landscape) بچرخانید</div>
 <canvas id="gameCanvas"></canvas>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const rotateMsg = document.getElementById("rotateMsg");
 
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
+let gameOver = false;
+let gameStarted = false;
+let animationId;
 
 const BG_IMG_SRC = "https://s6.uupload.ir/files/how-would-you-describe-this-angry-birds-background-v0-9rpwenf2y3nd1_0nx2.png";
 let bgImg = new Image();
 bgImg.src = BG_IMG_SRC;
 
-class Cloud {
-  constructor(x, y, speed) {
-    this.x = x;
-    this.y = y;
-    this.speed = speed;
-    this.radius = 20 + Math.random() * 15;
-  }
-  update() {
-    this.x -= this.speed;
-    if (this.x + this.radius * 2 < 0) {
-      this.x = canvas.width + this.radius * 2;
-      this.y = Math.random() * (canvas.height / 3);
+function setCanvasSize() {
+  if(window.innerWidth < window.innerHeight){
+    // صفحه عمودی هست
+    rotateMsg.style.display = "block";
+    canvas.style.display = "none";
+    cancelAnimationFrame(animationId);
+    gameStarted = false;
+  } else {
+    rotateMsg.style.display = "none";
+    canvas.style.display = "block";
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    if(!gameStarted) {
+      initGame();
+      gameStarted = true;
+      gameOver = false;
+      gameLoop();
     }
   }
-  draw() {
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.beginPath();
-    ctx.ellipse(this.x, this.y, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
+
+window.addEventListener("resize", setCanvasSize);
+setCanvasSize();
 
 class Obstacle {
   constructor(x, y, width, height, speed) {
@@ -63,18 +81,33 @@ class Obstacle {
     this.width = width;
     this.height = height;
     this.speed = speed;
+    this.radius = 15; // برای گرد کردن گوشه‌ها
   }
   update() {
     this.x -= this.speed;
     if (this.x + this.width < 0) {
       this.x = canvas.width + Math.random() * 200;
-      this.y = Math.random() * (canvas.height - 100) + 50;
+      this.y = Math.random() * (canvas.height - 150) + 50;
       this.height = 40 + Math.random() * 100;
     }
   }
   draw() {
     ctx.fillStyle = "#228B22";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    // رسم مستطیل با گوشه گرد
+    const r = this.radius;
+    const x = this.x, y = this.y, w = this.width, h = this.height;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
   }
 }
 
@@ -82,85 +115,156 @@ class Bird {
   constructor() {
     this.x = canvas.width / 5;
     this.y = canvas.height / 2;
-    this.radius = 15;
+    this.radiusX = 20; // برای بیضی بزرگ‌تر
+    this.radiusY = 15;
     this.gravity = 0.6;
     this.lift = -12;
     this.velocity = 0;
+    this.opacity = 1;
   }
   update() {
     this.velocity += this.gravity;
     this.y += this.velocity;
 
-    if (this.y + this.radius > canvas.height) {
-      this.y = canvas.height - this.radius;
+    if(this.y + this.radiusY > canvas.height){
+      this.y = canvas.height - this.radiusY;
       this.velocity = 0;
+      gameOver = true;
     }
-    if (this.y - this.radius < 0) {
-      this.y = this.radius;
+    if(this.y - this.radiusY < 0){
+      this.y = this.radiusY;
       this.velocity = 0;
     }
   }
   draw() {
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
     ctx.fillStyle = "#FF4500";
     ctx.beginPath();
-    ctx.ellipse(this.x, this.y, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
+    ctx.ellipse(this.x, this.y, this.radiusX, this.radiusY, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    // چشم
     ctx.fillStyle = "#000";
     ctx.beginPath();
-    ctx.arc(this.x + 5, this.y - 5, 4, 0, Math.PI * 2);
+    ctx.arc(this.x + 7, this.y - 5, 5, 0, Math.PI * 2);
     ctx.fill();
+
+    ctx.restore();
   }
   flap() {
     this.velocity = this.lift;
   }
+  fadeOut() {
+    if(this.opacity > 0){
+      this.opacity -= 0.02;
+      if(this.opacity < 0) this.opacity = 0;
+    }
+  }
 }
 
-let bird = new Bird();
-
-let clouds = [];
-for (let i = 0; i < 8; i++) {
-  clouds.push(new Cloud(Math.random() * canvas.width, Math.random() * (canvas.height / 3), 0.3 + Math.random() * 0.3));
-}
-
+let bird;
 let obstacles = [];
-for (let i = 0; i < 4; i++) {
-  let x = canvas.width + i * 250;
-  let y = Math.random() * (canvas.height - 150) + 50;
-  let height = 50 + Math.random() * 100;
-  obstacles.push(new Obstacle(x, y, 40, height, 3));
+
+function initGame() {
+  bird = new Bird();
+  obstacles = [];
+  for(let i = 0; i < 4; i++){
+    let x = canvas.width + i * 300;
+    let y = Math.random() * (canvas.height - 150) + 50;
+    let height = 40 + Math.random() * 100;
+    obstacles.push(new Obstacle(x, y, 50, height, 4));
+  }
 }
 
-// کنترل پرنده با لمس و کلیک
-canvas.addEventListener("touchstart", (e) => {
-  e.preventDefault();
-  bird.flap();
-}, {passive: false});
+function checkCollision(bird, obstacle) {
+  // برخورد بیضی پرنده با مستطیل گرد (approximate)
+  // روش ساده: بررسی برخورد دایره به مستطیل با radius متوسط
+  let cx = bird.x;
+  let cy = bird.y;
+  let rw = obstacle.width;
+  let rh = obstacle.height;
+  let rx = obstacle.x;
+  let ry = obstacle.y;
 
-canvas.addEventListener("mousedown", () => bird.flap());
+  // نزدیک‌ترین نقطه روی مستطیل به مرکز پرنده
+  let nearestX = Math.max(rx, Math.min(cx, rx + rw));
+  let nearestY = Math.max(ry, Math.min(cy, ry + rh));
 
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+  // فاصله به مرکز پرنده
+  let dx = cx - nearestX;
+  let dy = cy - nearestY;
 
-  clouds.forEach(cloud => {
-    cloud.update();
-    cloud.draw();
-  });
+  let radius = (bird.radiusX + bird.radiusY) / 2; // متوسط شعاع پرنده
 
-  obstacles.forEach(obstacle => {
-    obstacle.update();
-    obstacle.draw();
+  return (dx * dx + dy * dy) < (radius * radius);
+}
+
+function drawBackground(){
+  // تصویر را با حفظ نسبت و پوشش کل صفحه می‌کشیم (contain)
+  // پس زمینه سیاه گذاشتیم که اطراف تصویر مشکی باشه
+  let scaleX = canvas.width / bgImg.width;
+  let scaleY = canvas.height / bgImg.height;
+  let scale = Math.min(scaleX, scaleY);
+  let imgWidth = bgImg.width * scale;
+  let imgHeight = bgImg.height * scale;
+  let dx = (canvas.width - imgWidth) / 2;
+  let dy = (canvas.height - imgHeight) / 2;
+  ctx.drawImage(bgImg, dx, dy, imgWidth, imgHeight);
+}
+
+function showGameOver(){
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 60px Vazir, Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Game Over", canvas.width/2, canvas.height/2);
+}
+
+function gameLoop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawBackground();
+
+  obstacles.forEach(obs => {
+    obs.update();
+    obs.draw();
+    if(!gameOver && checkCollision(bird, obs)){
+      gameOver = true;
+    }
   });
 
   bird.update();
   bird.draw();
 
-  requestAnimationFrame(gameLoop);
+  if(gameOver){
+    bird.fadeOut();
+    showGameOver();
+    if(bird.opacity <= 0){
+      cancelAnimationFrame(animationId);
+      // بعد از چند ثانیه بازی ریست میشه
+      setTimeout(() => {
+        initGame();
+        gameOver = false;
+        bird.opacity = 1;
+        gameLoop();
+      }, 2000);
+      return;
+    }
+  }
+
+  animationId = requestAnimationFrame(gameLoop);
 }
 
-bgImg.onload = () => {
-  gameLoop();
-};
+canvas.addEventListener("touchstart", e => {
+  e.preventDefault();
+  if(!gameOver) bird.flap();
+}, {passive: false});
+
+canvas.addEventListener("mousedown", e => {
+  if(!gameOver) bird.flap();
+});
 </script>
+
 </body>
 </html>
