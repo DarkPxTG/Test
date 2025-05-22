@@ -357,6 +357,7 @@
 
   function startGame(){
     bird = new Bird();
+    bird.isMoving = true; // فقط این خط اضافه شده
     obstacles = [];
     bloodParticles.length = 0;
     gameStarted = true;
