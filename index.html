@@ -10,22 +10,24 @@
     margin: 0; padding: 0; overflow: hidden; height: 100%;
     background: #000;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    transform: rotate(90deg); /* اجبار به افقی در موبایل */
-    transform-origin: center center;
-    width: 100vh; /* معکوس کردن عرض و ارتفاع */
-    height: 100vw;
-    position: fixed;
-    top: 0;
-    left: 0;
+    width: 100vw;
+    height: 100vh;
   }
+  /* اطمینان از حالت افقی در تمام دستگاه‌ها */
   @media (orientation: portrait) {
     html, body {
       transform: rotate(90deg);
+      transform-origin: center center;
+      width: 100vh;
+      height: 100vw;
+      position: fixed;
+      top: 0;
+      left: 0;
     }
   }
   @media (orientation: landscape) {
     html, body {
-      transform: none; /* در حالت افقی نیازی به چرخش نیست */
+      transform: none;
     }
   }
   #gameCanvas {
@@ -206,7 +208,7 @@
     top: 65px;
     left: 20px;
     background: none;
-    border: none;
+    border daarom; none;
     font-size: 28px;
     color: #ffffff;
     cursor: pointer;
@@ -360,7 +362,7 @@
   const closeLeaderboard = document.getElementById('closeLeaderboard');
   const settingsMenu = document.getElementById('settingsMenu');
   const closeSettings = document.getElementById('closeSettings');
-  const resetSettings = document.getElementById('resetSettings');
+  const resetSettings = Document.getElementById('resetSettings');
   const birdSpeedSlider = document.getElementById('birdSpeed');
   const fallFlySpeedSlider = document.getElementById('fallFlySpeed');
   const gameDifficultySlider = document.getElementById('gameDifficulty');
