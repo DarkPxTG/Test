@@ -20,39 +20,42 @@
     position: relative;
     z-index: 1;
   }
-  #loadingScreen {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: #000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 1500;
+  #rotateScreen {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    font-size: 32px; font-weight: 900;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px 40px;
+    border-radius: 15px;
+    border: 4px solid #00ff00;
+    user-select: none;
+    z-index: 1200;
+    pointer-events: none;
+    text-align: center;
+    text-shadow: 
+      0 0 10px #00ff00, 
+      0 0 20px #00ff00, 
+      0 0 30px #00ff00;
+    animation: neonGlow 1s ease-in-out infinite;
+    text-transform: uppercase;
   }
-  #loadingLogo {
-    width: 120px;
-    height: 120px;
-    animation: pulseLogo 1.5s ease-in-out infinite;
-  }
-  @keyframes pulseLogo {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-  }
-  #loadingText {
-    color: #ff3f3f;
-    font-size: 36px;
-    font-weight: 900;
-    text-shadow: 0 0 15px #ff3f3f;
-    margin-top: 20px;
-    letter-spacing: 4px;
-  }
-  #loadingText span {
-    display: inline-block;
-    animation: wave 1.5s infinite ease-in-out;
-  }
-  @keyframes wave {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+  @keyframes neonGlow {
+    0%, 100% { 
+      text-shadow: 
+        0 0 10px #00ff00, 
+        0 0 20px #00ff00, 
+        0 0 30px #00ff00;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% { 
+      text-shadow: 
+        0 0 20px #00ff00, 
+        0 0 40px #00ff00, 
+        0 0 60px #00ff00;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
   }
   #homeScreen {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -142,6 +145,10 @@
     z-index: 1100;
     user-select: none;
   }
+  @keyframes wave {
+    0%, 100% { text-shadow: 0 0 15px #ff3f3f; }
+    50% { text-shadow: 0 0 30px #ff0000, 0 0 40px #ff0000; }
+  }
   #loading span {
     display: inline-block;
     animation: wave 1.5s infinite ease-in-out;
@@ -190,84 +197,58 @@
     background: rgba(0, 0, 0, 0.9);
     color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 15px;
+    padding: 20px;
     border-radius: 12px;
     border: 3px solid #ff3f3f;
     z-index: 1200;
     display: none;
     text-align: center;
     width: 80%;
-    max-width: 320px; /* منوی جمع‌وجورتر */
+    max-width: 400px;
   }
   #leaderboard h2, #settingsMenu h2 {
-    font-size: 28px; /* فونت کوچکتر */
-    margin: 0 0 15px;
+    font-size: 32px;
+    margin: 0 0 20px;
     text-shadow: 0 0 10px #ff3f3f;
   }
   #leaderboard p, #settingsMenu p {
-    font-size: 18px; /* فونت کوچکتر */
-    margin: 5px 0;
+    font-size: 24px;
+    margin: 10px 0;
   }
   #leaderboard button, #settingsMenu button {
     background: linear-gradient(45deg, #ff3f3f, #ff0000);
     color: #ffffff;
-    font-size: 16px; /* دکمه‌ها کوچکتر */
-    padding: 8px 16px;
+    font-size: 20px;
+    padding: 10px 20px;
     border-radius: 8px;
     border: 2px solid #ffffff;
     cursor: pointer;
-    margin: 5px; /* فاصله کمتر */
+    margin-top: 20px;
   }
   #leaderboard button:hover, #settingsMenu button:hover {
     transform: scale(1.1);
   }
-  #settingsMenu .slider-container {
-    margin: 10px 0;
-  }
-  #settingsMenu input[type="range"] {
-    width: 100%;
-    -webkit-appearance: none;
+  #settingsMenu select {
     background: #333;
-    border-radius: 5px;
-    height: 8px;
+    color: #fff;
+    border: 2px solid #ff3f3f;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 16px;
+    margin: 10px 0;
+    width: 80%;
+    cursor: pointer;
+  }
+  #settingsMenu select:focus {
     outline: none;
-  }
-  #settingsMenu input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #ff3f3f;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-  #settingsMenu input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: #ff3f3f;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-  #settingsMenu .slider-value {
-    font-size: 14px;
-    color: #ffffff;
-    margin-top: 5px;
-  }
-  #settingsMenu .button-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+    border-color: #ffffff;
   }
 </style>
 </head>
 <body>
 
 <canvas id="gameCanvas"></canvas>
-<div id="loadingScreen">
-  <img id="loadingLogo" src="https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png" alt="Loading Logo" />
-  <div id="loadingText">LOADING</div>
-</div>
+<div id="rotateScreen">PLEASE ROTATE YOUR DEVICE TO LANDSCAPE</div>
 <div id="homeScreen">
   <div id="homeScreenContent">
     <button id="leaderboardButton">☰</button>
@@ -287,31 +268,34 @@
 </div>
 <div id="settingsMenu">
   <h2>Settings</h2>
-  <div class="slider-container">
-    <p>Bird Speed</p>
-    <input type="range" id="birdSpeed" min="1.5" max="3.5" step="0.5" value="2.5">
-    <div class="slider-value" id="birdSpeedValue">Normal</div>
-  </div>
-  <div class="slider-container">
-    <p>Fall/Fly Speed</p>
-    <input type="range" id="fallFlySpeed" min="0" max="2" step="1" value="1">
-    <div class="slider-value" id="fallFlySpeedValue">Normal</div>
-  </div>
-  <div class="slider-container">
-    <p>Game Difficulty</p>
-    <input type="range" id="gameDifficulty" min="0" max="4" step="1" value="2">
-    <div class="slider-value" id="gameDifficultyValue">Normal</div>
-  </div>
-  <div class="button-container">
-    <button id="resetSettings">Reset</button>
-    <button id="closeSettings">Close</button>
-  </div>
+  <p>Bird Speed:</p>
+  <select id="birdSpeed">
+    <option value="slow">Slow</option>
+    <option value="normal" selected>Normal</option>
+    <option value="fast">Fast</option>
+  </select>
+  <p>Fall/Fly Speed:</p>
+  <select id="fallFlySpeed">
+    <option value="slow">Slow</option>
+    <option value="normal" selected>Normal</option>
+    <option value="fast">Fast</option>
+  </select>
+  <p>Game Difficulty:</p>
+  <select id="gameDifficulty">
+    <option value="veryEasy">Very Easy</option>
+    <option value="easy">Easy</option>
+    <option value="normal" selected>Normal</option>
+    <option value="hard">Hard</option>
+    <option value="veryHard">Very Hard</option>
+  </select>
+  <button id="resetSettings">Reset to Default</button>
+  <button id="closeSettings">Close</button>
 </div>
 
 <script>
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
-  const loadingScreen = document.getElementById('loadingScreen');
+  const rotateScreen = document.getElementById('rotateScreen');
   const homeScreen = document.getElementById('homeScreen');
   const startButton = document.getElementById('startButton');
   const loading = document.getElementById('loading');
@@ -324,12 +308,9 @@
   const settingsMenu = document.getElementById('settingsMenu');
   const closeSettings = document.getElementById('closeSettings');
   const resetSettings = document.getElementById('resetSettings');
-  const birdSpeedSlider = document.getElementById('birdSpeed');
-  const fallFlySpeedSlider = document.getElementById('fallFlySpeed');
-  const gameDifficultySlider = document.getElementById('gameDifficulty');
-  const birdSpeedValue = document.getElementById('birdSpeedValue');
-  const fallFlySpeedValue = document.getElementById('fallFlySpeedValue');
-  const gameDifficultyValue = document.getElementById('gameDifficultyValue');
+  const birdSpeedSelect = document.getElementById('birdSpeed');
+  const fallFlySpeedSelect = document.getElementById('fallFlySpeed');
+  const gameDifficultySelect = document.getElementById('gameDifficulty');
   const currentScoreDisplay = document.getElementById('currentScore');
   const highScoreDisplay = document.getElementById('highScore');
 
@@ -354,9 +335,9 @@
 
   // تنظیمات پیش‌فرض
   const defaultSettings = {
-    birdSpeed: 2.5,
-    fallFlySpeed: 1,
-    gameDifficulty: 2
+    birdSpeed: 'normal',
+    fallFlySpeed: 'normal',
+    gameDifficulty: 'normal'
   };
 
   // بارگذاری تنظیمات از localStorage یا استفاده از پیش‌فرض
@@ -365,61 +346,56 @@
 
   function applySettings() {
     // Bird Speed
-    speed = parseFloat(settings.birdSpeed);
-    birdSpeedSlider.value = speed;
-    birdSpeedValue.textContent = speed === 1.5 ? 'Slow' : speed === 2.5 ? 'Normal' : 'Fast';
+    switch (settings.birdSpeed) {
+      case 'slow': speed = 1.5; break;
+      case 'normal': speed = 2.5; break;
+      case 'fast': speed = 3.5; break;
+    }
+    birdSpeedSelect.value = settings.birdSpeed;
 
     // Fall/Fly Speed
     if (bird) {
-      switch (parseInt(settings.fallFlySpeed)) {
-        case 0:
+      switch (settings.fallFlySpeed) {
+        case 'slow':
           bird.gravity = 0.2;
           bird.lift = -5;
-          fallFlySpeedValue.textContent = 'Slow';
           break;
-        case 1:
+        case 'normal':
           bird.gravity = 0.3;
           bird.lift = -6;
-          fallFlySpeedValue.textContent = 'Normal';
           break;
-        case 2:
+        case 'fast':
           bird.gravity = 0.4;
           bird.lift = -7;
-          fallFlySpeedValue.textContent = 'Fast';
           break;
       }
     }
-    fallFlySpeedSlider.value = settings.fallFlySpeed;
+    fallFlySpeedSelect.value = settings.fallFlySpeed;
 
     // Game Difficulty
-    switch (parseInt(settings.gameDifficulty)) {
-      case 0:
+    switch (settings.gameDifficulty) {
+      case 'veryEasy':
         maxDifficulty = 1;
         minGap = 100;
-        gameDifficultyValue.textContent = 'Very Easy';
         break;
-      case 1:
+      case 'easy':
         maxDifficulty = 2;
         minGap = 90;
-        gameDifficultyValue.textContent = 'Easy';
         break;
-      case 2:
+      case 'normal':
         maxDifficulty = 3;
         minGap = 80;
-        gameDifficultyValue.textContent = 'Normal';
         break;
-      case 3:
+      case 'hard':
         maxDifficulty = 4;
         minGap = 70;
-        gameDifficultyValue.textContent = 'Hard';
         break;
-      case 4:
+      case 'veryHard':
         maxDifficulty = 5;
         minGap = 60;
-        gameDifficultyValue.textContent = 'Very Hard';
         break;
     }
-    gameDifficultySlider.value = settings.gameDifficulty;
+    gameDifficultySelect.value = settings.gameDifficulty;
 
     // ذخیره تنظیمات
     localStorage.setItem('flappyBirdSettings', JSON.stringify(settings));
@@ -440,24 +416,26 @@
   }
   resize();
 
-  // نمایش صفحه لودینگ و سپس لابی
-  window.addEventListener('load', () => {
-    loadingScreen.style.display = 'flex';
-    const text = 'LOADING';
-    const loadingText = document.getElementById('loadingText');
-    loadingText.innerHTML = '';
-    for (let i = 0; i < text.length; i++) {
-      let span = document.createElement('span');
-      span.textContent = text[i];
-      span.style.animationDelay = `${i * 0.15}s`;
-      loadingText.appendChild(span);
+  function checkOrientation() {
+    if (window.innerWidth < window.innerHeight) {
+      rotateScreen.style.display = 'block';
+      homeScreen.style.display = 'none';
+      canvas.style.display = 'none';
+      bloodCanvas.style.display = 'none';
+      leaderboard.style.display = 'none';
+      settingsMenu.style.display = 'none';
+      return false;
+    } else {
+      rotateScreen.style.display = 'none';
+      if (!gameStarted && !inHomeScreen) {
+        homeScreen.style.display = 'block';
+        inHomeScreen = true;
+      }
+      canvas.style.display = 'block';
+      bloodCanvas.style.display = 'block';
+      return true;
     }
-    setTimeout(() => {
-      loadingScreen.style.display = 'none';
-      homeScreen.style.display = 'block';
-      inHomeScreen = true;
-    }, 4000); // 4 ثانیه
-  });
+  }
 
   class Bird {
     constructor() {
@@ -693,7 +671,7 @@
     const elapsedTime = Math.floor((performance.now() - startTime) / 1000);
     ctx.save();
     ctx.fillStyle = '#ffffff';
-    ctx.font = '36px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    ctx.font = '24px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${elapsedTime}s`, W / 2, 30);
@@ -863,24 +841,36 @@
     resetSettingsToDefault();
   });
 
-  birdSpeedSlider.addEventListener('input', () => {
-    settings.birdSpeed = parseFloat(birdSpeedSlider.value);
+  birdSpeedSelect.addEventListener('change', () => {
+    settings.birdSpeed = birdSpeedSelect.value;
     applySettings();
   });
 
-  fallFlySpeedSlider.addEventListener('input', () => {
-    settings.fallFlySpeed = parseInt(fallFlySpeedSlider.value);
+  fallFlySpeedSelect.addEventListener('change', () => {
+    settings.fallFlySpeed = fallFlySpeedSelect.value;
     applySettings();
   });
 
-  gameDifficultySlider.addEventListener('input', () => {
-    settings.gameDifficulty = parseInt(gameDifficultySlider.value);
+  gameDifficultySelect.addEventListener('change', () => {
+    settings.gameDifficulty = gameDifficultySelect.value;
     applySettings();
   });
 
+  let orientationChanged = false;
   window.addEventListener('resize', () => {
     resize();
+    if (checkOrientation() && !orientationChanged) {
+      orientationChanged = true;
+      homeScreen.style.display = 'block';
+      inHomeScreen = true;
+    }
   });
+
+  if (checkOrientation()) {
+    orientationChanged = true;
+    homeScreen.style.display = 'block';
+    inHomeScreen = true;
+  }
 
   canvas.addEventListener('touchstart', e => {
     e.preventDefault();
