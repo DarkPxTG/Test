@@ -228,19 +228,36 @@
   #leaderboard button:hover, #settingsMenu button:hover {
     transform: scale(1.1);
   }
-  #settingsMenu select {
-    background: #333;
-    color: #fff;
-    border: 2px solid #ff3f3f;
-    border-radius: 8px;
-    padding: 8px;
-    font-size: 16px;
-    margin: 10px 0;
+  #settingsMenu input[type="range"] {
     width: 80%;
-    cursor: pointer;
-  }
-  #settingsMenu select:focus {
+    margin: 10px 0;
+    background: #333;
+    -webkit-appearance: none;
+    height: 8px;
+    border-radius: 5px;
     outline: none;
+    border: 2px solid #ff3f3f;
+  }
+  #settingsMenu input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #ff3f3f;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 63, 63, 0.8);
+  }
+  #settingsMenu input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #ff3f3f;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 63, 63, 0.8);
+  }
+  #settingsMenu input[type="range"]:focus {
     border-color: #ffffff;
   }
 </style>
@@ -269,25 +286,11 @@
 <div id="settingsMenu">
   <h2>Settings</h2>
   <p>Bird Speed:</p>
-  <select id="birdSpeed">
-    <option value="slow">Slow</option>
-    <option value="normal" selected>Normal</option>
-    <option value="fast">Fast</option>
-  </select>
+  <input type="range" id="birdSpeed" min="1" max="3" value="2" step="1">
   <p>Fall/Fly Speed:</p>
-  <select id="fallFlySpeed">
-    <option value="slow">Slow</option>
-    <option value="normal" selected>Normal</option>
-    <option value="fast">Fast</option>
-  </select>
+  <input type="range" id="fallFlySpeed" min="1" max="3" value="2" step="1">
   <p>Game Difficulty:</p>
-  <select id="gameDifficulty">
-    <option value="veryEasy">Very Easy</option>
-    <option value="easy">Easy</option>
-    <option value="normal" selected>Normal</option>
-    <option value="hard">Hard</option>
-    <option value="veryHard">Very Hard</option>
-  </select>
+  <input type="range" id="gameDifficulty" min="1" max="5" value="3" step="1">
   <button id="resetSettings">Reset to Default</button>
   <button id="closeSettings">Close</button>
 </div>
@@ -319,12 +322,12 @@
   let gameOver = false;
   let bird;
   let obstacles = [];
-  let speed = 2.5; // پیش‌فرض: Normal
+  let speed = 2.5; // Default: Normal
   let score = 0;
   let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
   let difficultyIncrement = 0;
-  let maxDifficulty = 3; // پیش‌فرض: Normal
-  let minGap = 80; // پیش‌فرض: Normal
+  let maxDifficulty = 3; // Default: Normal
+  let minGap = 80; // Default: Normal
   let loadingDuration = 3000;
   let bloodParticles = [];
   let birdImage = new Image();
@@ -333,71 +336,71 @@
   let inHomeScreen = false;
   let isGameActive = false;
 
-  // تنظیمات پیش‌فرض
+  // Default settings
   const defaultSettings = {
-    birdSpeed: 'normal',
-    fallFlySpeed: 'normal',
-    gameDifficulty: 'normal'
+    birdSpeed: '2', // Normal
+    fallFlySpeed: '2', // Normal
+    gameDifficulty: '3' // Normal
   };
 
-  // بارگذاری تنظیمات از localStorage یا استفاده از پیش‌فرض
+  // Load settings from localStorage or use defaults
   let settings = JSON.parse(localStorage.getItem('flappyBirdSettings')) || defaultSettings;
   applySettings();
 
   function applySettings() {
     // Bird Speed
-    switch (settings.birdSpeed) {
-      case 'slow': speed = 1.5; break;
-      case 'normal': speed = 2.5; break;
-      case 'fast': speed = 3.5; break;
+    switch (parseInt(settings.birdSpeed)) {
+      case 1: speed = 1.5; break; // Slow
+      case 2: speed = 2.5; break; // Normal
+      case 3: speed = 3.5; break; // Fast
     }
     birdSpeedSelect.value = settings.birdSpeed;
 
     // Fall/Fly Speed
     if (bird) {
-      switch (settings.fallFlySpeed) {
-        case 'slow':
+      switch (parseInt(settings.fallFlySpeed)) {
+        case 1:
           bird.gravity = 0.2;
           bird.lift = -5;
-          break;
-        case 'normal':
+          break; // Slow
+        case 2:
           bird.gravity = 0.3;
           bird.lift = -6;
-          break;
-        case 'fast':
+          break; // Normal
+        case 3:
           bird.gravity = 0.4;
           bird.lift = -7;
-          break;
+          break; // Fast
       }
     }
     fallFlySpeedSelect.value = settings.fallFlySpeed;
 
     // Game Difficulty
-    switch (settings.gameDifficulty) {
-      case 'veryEasy':
+    switch (parseInt(settings.gameDifficulty)) {
+      case 1:
         maxDifficulty = 1;
         minGap = 100;
-        break;
-      case 'easy':
+        break; // Very Easy
+      case 2:
         maxDifficulty = 2;
         minGap = 90;
-        break;
-      case 'normal':
+        break; // Easy
+      case 3:
         maxDifficulty = 3;
         minGap = 80;
-        break;
-      case 'hard':
+        break; // Normal
+      case 4:
         maxDifficulty = 4;
         minGap = 70;
-        break;
-      case 'veryHard':
+        break; // Hard
+      case 5:
         maxDifficulty = 5;
         minGap = 60;
-        break;
+        break; // Very Hard
     }
     gameDifficultySelect.value = settings.gameDifficulty;
 
-    // ذخیره تنظیمات
+    // Save settings
     localStorage.setItem('flappyBirdSettings', JSON.stringify(settings));
   }
 
@@ -443,11 +446,11 @@
       this.x = W / 4;
       this.y = H / 2;
       this.velocity = 0;
-      this.gravity = 0.3; // پیش‌فرض: Normal
-      this.lift = -6; // پیش‌فرض: Normal
+      this.gravity = 0.3; // Default: Normal
+      this.lift = -6; // Default: Normal
       this.isMoving = false;
       this.dead = false;
-      applySettings(); // اعمال تنظیمات برای gravity و lift
+      applySettings(); // Apply settings for gravity and lift
     }
     update() {
       if (!this.isMoving) return;
@@ -671,7 +674,7 @@
     const elapsedTime = Math.floor((performance.now() - startTime) / 1000);
     ctx.save();
     ctx.fillStyle = '#ffffff';
-    ctx.font = '24px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    ctx.font = '36px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif'; // Increased font size
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${elapsedTime}s`, W / 2, 30);
@@ -841,17 +844,17 @@
     resetSettingsToDefault();
   });
 
-  birdSpeedSelect.addEventListener('change', () => {
+  birdSpeedSelect.addEventListener('input', () => {
     settings.birdSpeed = birdSpeedSelect.value;
     applySettings();
   });
 
-  fallFlySpeedSelect.addEventListener('change', () => {
+  fallFlySpeedSelect.addEventListener('input', () => {
     settings.fallFlySpeed = fallFlySpeedSelect.value;
     applySettings();
   });
 
-  gameDifficultySelect.addEventListener('change', () => {
+  gameDifficultySelect.addEventListener('input', () => {
     settings.gameDifficulty = gameDifficultySelect.value;
     applySettings();
   });
