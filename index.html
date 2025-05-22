@@ -1,472 +1,129 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<title>Flappy Bird افقی حرفه‌ای</title>
-<style>
-  html, body {
-    margin: 0; padding: 0; overflow: hidden; height: 100%;
-    background: #000;
-    font-family: 'Vazir', sans-serif, sans-serif;
-  }
-  #gameCanvas {
-    display: block;
-    background: url('https://s6.uupload.ir/files/how-would-you-describe-this-angry-birds-background-v0-9rpwenf2y3nd1_0nx2.png') no-repeat center center;
-    background-size: cover;
-    width: 100vw;
-    height: 100vh;
-    touch-action: none;
-    position: relative;
-    z-index: 1;
-  }
-  #rotateScreen {
-    position: fixed; bottom: 10px; right: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255,255,255,0.15);
-    font-size: 12px; font-weight: 600;
-    font-family: monospace;
-    padding: 5px 8px;
-    border-radius: 5px;
-    user-select: none;
-    z-index: 1200;
-    pointer-events: none;
-    text-transform: uppercase;
-  }
-  #loading {
-    position: fixed; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 36px; color: #ff3f3f;
-    font-weight: 900;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    text-shadow:
-      0 0 15px #ff3f3f,
-      0 0 30px #ff3f3f,
-      0 0 40px #ff3f3f,
-      0 0 60px #ff3f3f;
-    letter-spacing: 6px;
-    display: none;
-    z-index: 1100;
-    user-select: none;
-  }
-  /* افکت موجی روی متن لودینگ */
-  @keyframes wave {
-    0%, 100% { text-shadow: 0 0 15px #ff3f3f; }
-    50% { text-shadow: 0 0 30px #ff0000, 0 0 40px #ff0000; }
-  }
-  #loading span {
-    display: inline-block;
-    animation: wave 1.5s infinite ease-in-out;
-  }
-  /* خون فواره ای روی صفحه */
-  #bloodOverlay {
-    position: fixed; top:0; left:0; width:100vw; height:100vh;
-    pointer-events:none;
-    z-index: 1300;
-    mix-blend-mode: multiply;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Flappy Bird Horizontal</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #70c5ce;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: linear-gradient(to bottom, #70c5ce 0%, #ffffff 100%);
+    }
+    #timer {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 30px;
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #000;
+    }
+  </style>
 </head>
 <body>
+  <div id="timer">0</div>
+  <canvas id="game" width="800" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-<canvas id="gameCanvas"></canvas>
-<div id="rotateScreen">PLEASE ROTATE YOUR DEVICE TO LANDSCAPE</div>
-<div id="loading"></div>
-<canvas id="bloodOverlay"></canvas>
+    let bird = { x: 100, y: 150, width: 40, height: 40, velocity: 0, gravity: 0.5, jump: -8 };
+    let pipes = [];
+    let frame = 0;
+    let timer = 0;
+    let gap = 140;
+    let pipeSpeed = 3;
 
-<script>
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
-  const rotateScreen = document.getElementById('rotateScreen');
-  const loading = document.getElementById('loading');
-  const bloodCanvas = document.getElementById('bloodOverlay');
-  const bloodCtx = bloodCanvas.getContext('2d');
+    const timerElement = document.getElementById("timer");
+    setInterval(() => {
+      timer++;
+      timerElement.textContent = timer;
+    }, 500); // تایمر سریع
 
-  let W, H;
-  let gameStarted = false;
-  let gameOver = false;
-  let bird;
-  let obstacles = [];
-  let speed = 2.2;
-  let score = 0;
-  let difficultyIncrement = 0;
-  let maxDifficulty = 3;
-  let loadingDuration = 3000;
-  let bloodParticles = [];
-
-  // تغییر اندازه صفحه و اندازه کانواس
-  function resize() {
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = W;
-    canvas.height = H;
-    bloodCanvas.width = W;
-    bloodCanvas.height = H;
-  }
-  resize();
-
-  // چک کردن جهت صفحه
-  function checkOrientation() {
-    if(window.innerWidth < window.innerHeight){
-      rotateScreen.style.display = "block";
-      canvas.style.display = "none";
-      bloodCanvas.style.display = "none";
-      return false;
-    } else {
-      rotateScreen.style.display = "none";
-      canvas.style.display = "block";
-      bloodCanvas.style.display = "block";
-      return true;
+    function resetGame() {
+      bird.y = 150;
+      bird.velocity = 0;
+      pipes = [];
+      frame = 0;
+      timer = 0;
+      gap = 140;
+      pipeSpeed = 3;
     }
-  }
 
-  // کلاس پرنده
-  class Bird {
-    constructor() {
-      this.radius = 22;
-      this.x = W / 4;
-      this.y = H / 2;
-      this.velocity = 0;
-      this.gravity = 0.25;    // کمتر برای پرش آرومتر
-      this.lift = -6;         // کمتر برای بالا پریدن آرام‌تر
-      this.isMoving = false;  // آیا بازی شروع شده؟
-      this.dead = false;
-    }
-    update() {
-      if(!this.isMoving) return;
-      this.velocity += this.gravity;
-      this.velocity *= 0.98; // اصطکاک برای کنترل بهتر
-      this.y += this.velocity;
-
-      if(this.y + this.radius > H){
-        this.y = H - this.radius;
-        this.velocity = 0;
-        this.dead = true;
-        gameOver = true;
-        createBloodFountain(this.x, this.y);
-        shakeScreen();
-      }
-      if(this.y - this.radius < 0){
-        this.y = this.radius;
-        this.velocity = 0;
-      }
-    }
-    flap() {
-      if(this.dead) return;
-      this.velocity += this.lift;
-    }
-    draw() {
-      ctx.save();
-      ctx.fillStyle = '#ffff33';
-      ctx.shadowColor = 'orange';
-      ctx.shadowBlur = 15;
+    function drawBird() {
+      ctx.fillStyle = "yellow";
       ctx.beginPath();
-      ctx.ellipse(this.x, this.y, this.radius+6, this.radius, 0, 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-
-      // چشم
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(this.x + 6, this.y - 6, 6, 0, Math.PI*2);
+      ctx.arc(bird.x, bird.y, bird.width / 2, 0, Math.PI * 2);
       ctx.fill();
     }
-  }
 
-  // کلاس موانع با سختی افزایشی و طرح خونین
-  class Obstacle {
-    constructor(x, width, heightTop, gap) {
-      this.x = x;
-      this.width = width;
-      this.heightTop = heightTop;
-      this.gap = gap;
-      this.speed = speed;
-      this.radius = 14;
-      this.bloodDrops = [];
-    }
-
-    update() {
-      this.x -= this.speed;
-
-      if(this.x + this.width < 0){
-        this.x = W + 250 + Math.random()*200;
-        // ارتفاع مانع بالا با سختی افزایشی
-        let baseHeight = Math.random()*(H - this.gap - 100) + 50;
-        this.heightTop = Math.min(baseHeight + difficultyIncrement*20, H - this.gap - 40);
-        // افزایش فاصله گپ با سختی کمتر برای امکان عبور
-        this.gap = 140 - difficultyIncrement*15;
-        if(this.gap < 90) this.gap = 90;
-        score++;
-        if(score % 5 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement++;
-      }
-      // قطرات خون برای افکت
-      if(gameOver && this.x < bird.x + bird.radius && this.x + this.width > bird.x - bird.radius){
-        this.spawnBloodDrop();
-      }
-      // به‌روزرسانی قطرات خون
-      for(let i=this.bloodDrops.length-1; i>=0; i--){
-        let d = this.bloodDrops[i];
-        d.y += d.speed;
-        d.opacity -= 0.025;
-        if(d.opacity <= 0) this.bloodDrops.splice(i,1);
+    function drawPipes() {
+      ctx.fillStyle = "green";
+      for (let i = 0; i < pipes.length; i++) {
+        let p = pipes[i];
+        ctx.fillRect(p.x, 0, 50, p.top);
+        ctx.fillRect(p.x, p.top + gap, 50, canvas.height - p.top - gap);
       }
     }
 
-    spawnBloodDrop() {
-      if(this.bloodDrops.length < 8 && Math.random() < 0.3) {
-        this.bloodDrops.push({
-          x: this.x + this.width/2 + (Math.random()-0.5)*this.width/2,
-          y: this.heightTop + this.gap + this.radius,
-          speed: 2 + Math.random()*2,
-          opacity: 1
-        });
+    function updatePipes() {
+      if (frame % 90 === 0) {
+        let top = Math.random() * (canvas.height - gap - 80) + 20;
+        pipes.push({ x: canvas.width, top: top });
+        // افزایش سختی تدریجی
+        if (gap > 100) gap -= 1;
+        if (pipeSpeed < 8) pipeSpeed += 0.05;
+      }
+
+      for (let i = 0; i < pipes.length; i++) {
+        pipes[i].x -= pipeSpeed;
+
+        if (
+          bird.x + bird.width / 2 > pipes[i].x &&
+          bird.x - bird.width / 2 < pipes[i].x + 50 &&
+          (bird.y - bird.height / 2 < pipes[i].top ||
+            bird.y + bird.height / 2 > pipes[i].top + gap)
+        ) {
+          resetGame();
+        }
+      }
+
+      pipes = pipes.filter(p => p.x + 50 > 0);
+    }
+
+    function updateBird() {
+      bird.velocity += bird.gravity;
+      bird.y += bird.velocity;
+
+      if (bird.y + bird.height / 2 >= canvas.height || bird.y - bird.height / 2 <= 0) {
+        resetGame();
       }
     }
 
-    draw() {
-      ctx.save();
-      // رنگ خون تیره
-      ctx.fillStyle = '#8B0000';
-      ctx.shadowColor = 'red';
-      ctx.shadowBlur = 16;
-      // مانع بالا گرد شده
-      roundRect(ctx, this.x, 0, this.width, this.heightTop, this.radius, true);
-      // مانع پایین گرد شده
-      roundRect(ctx, this.x, this.heightTop + this.gap, this.width, H - this.heightTop - this.gap, this.radius, true);
-      ctx.restore();
-
-      // قطرات خون
-      for(let d of this.bloodDrops){
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(255,0,0,${d.opacity})`;
-        ctx.arc(d.x, d.y, 5, 0, Math.PI*2);
-        ctx.fill();
-      }
-    }
-
-    checkCollision(bird) {
-      if(circleRectCollision(bird.x, bird.y, bird.radius,
-          this.x, 0, this.width, this.heightTop)) return true;
-
-      if(circleRectCollision(bird.x, bird.y, bird.radius,
-          this.x, this.heightTop + this.gap, this.width, H - this.heightTop - this.gap)) return true;
-
-      return false;
-    }
-  }
-
-  // تابع رسم مستطیل با گوشه‌های گرد
-  function roundRect(ctx, x, y, w, h, r, fill=true) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-    if(fill) ctx.fill();
-  }
-
-  // برخورد دایره با مستطیل
-  function circleRectCollision(cx, cy, cr, rx, ry, rw, rh) {
-    let testX = cx;
-    let testY = cy;
-
-    if(cx < rx) testX = rx;
-    else if(cx > rx + rw) testX = rx + rw;
-
-    if(cy < ry) testY = ry;
-    else if(cy > ry + rh) testY = ry + rh;
-
-    let distX = cx - testX;
-    let distY = cy - testY;
-    let distance = Math.sqrt(distX*distX + distY*distY);
-
-    return distance <= cr;
-  }
-
-  // لرزش صفحه
-  function shakeScreen(){
-    let intensity = 6;
-    let duration = 400;
-    let start = performance.now();
-
-    function animate(t){
-      let elapsed = t - start;
-      if(elapsed < duration){
-        let dx = (Math.random()*2-1)*intensity;
-        let dy = (Math.random()*2-1)*intensity;
-        canvas.style.transform = `translate(${dx}px, ${dy}px)`;
-        bloodCanvas.style.transform = `translate(${dx}px, ${dy}px)`;
-        requestAnimationFrame(animate);
-      } else {
-        canvas.style.transform = 'translate(0,0)';
-        bloodCanvas.style.transform = 'translate(0,0)';
-      }
-    }
-    requestAnimationFrame(animate);
-  }
-
-  // ذرات خون فواره ای
-  class BloodParticle {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-      this.size = 4 + Math.random()*5;
-      this.speedX = (Math.random()-0.5)*10;
-      this.speedY = - (Math.random()*10 + 10);
-      this.gravity = 0.5;
-      this.opacity = 1;
-      this.fadeSpeed = 0.03 + Math.random()*0.02;
-    }
-    update() {
-      this.x += this.speedX;
-      this.y += this.speedY;
-      this.speedY += this.gravity;
-      this.opacity -= this.fadeSpeed;
-    }
-    draw() {
-      bloodCtx.beginPath();
-      bloodCtx.fillStyle = `rgba(139,0,0,${this.opacity})`;
-      bloodCtx.shadowColor = 'red';
-      bloodCtx.shadowBlur = 10;
-      bloodCtx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-      bloodCtx.fill();
-    }
-  }
-
-  function createBloodFountain(x, y) {
-    bloodParticles.length = 0;
-    for(let i=0; i<60; i++){
-      bloodParticles.push(new BloodParticle(x, y));
-    }
-  }
-
-  function updateBloodParticles(){
-    bloodCtx.clearRect(0,0,W,H);
-    for(let i=bloodParticles.length-1; i>=0; i--){
-      let p = bloodParticles[i];
-      p.update();
-      if(p.opacity <= 0){
-        bloodParticles.splice(i,1);
-      } else {
-        p.draw();
-      }
-    }
-  }
-
-  // انیمیشن لودینگ جذاب
-  function showLoadingAnimation(callback) {
-    loading.style.display = 'block';
-    loading.innerHTML = ''; 
-    const text = 'LOADING';
-    for(let i=0; i<text.length; i++){
-      let span = document.createElement('span');
-      span.textContent = text[i];
-      span.style.animationDelay = `${i * 0.15}s`;
-      loading.appendChild(span);
-    }
-    setTimeout(() => {
-      loading.style.display = 'none';
-      callback();
-    }, loadingDuration);
-  }
-
-  // شروع بازی
-  function startGame(){
-    bird = new Bird();
-    obstacles = [];
-    bloodParticles.length = 0;
-    gameStarted = true;
-    gameOver = false;
-    score = 0;
-    difficultyIncrement = 0;
-    speed = 2.2;
-
-    let startX = W + 200;
-    for(let i=0; i<4; i++){
-      // فاصله و ارتفاع متنوع
-      let gapSize = 140;
-      let hTop = Math.random()*(H - gapSize - 100) + 50;
-      obstacles.push(new Obstacle(startX + i*250, 60, hTop, gapSize));
-    }
-  }
-
-  // حلقه اصلی بازی
-  function gameLoop(){
-    ctx.clearRect(0,0,W,H);
-
-    // رسم موانع
-    obstacles.forEach(ob => {
-      ob.update();
-      ob.draw();
-      if(ob.checkCollision(bird) && !bird.dead){
-        bird.dead = true;
-        gameOver = true;
-        createBloodFountain(bird.x, bird.y);
-        shakeScreen();
-      }
-    });
-
-    bird.update();
-    bird.draw();
-
-    if(gameOver){
-      updateBloodParticles();
-    }
-
-    if(!gameOver && gameStarted){
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBird();
+      drawPipes();
+      updateBird();
+      updatePipes();
+      frame++;
       requestAnimationFrame(gameLoop);
-    } else if(gameOver){
-      setTimeout(() => {
-        gameStarted = false;
-        showLoadingAnimation(() => {
-          startGame();
-          gameLoop();
-        });
-      }, 2500);
     }
-  }
 
-  // شروع بازی با چرخش گوشی و بدون نیاز به لمس
-  let orientationChanged = false;
-  window.addEventListener('resize', () => {
-    resize();
-    if(checkOrientation() && !orientationChanged){
-      orientationChanged = true;
-      showLoadingAnimation(() => {
-        startGame();
-        gameLoop();
-      });
-    }
-  });
-
-  if(checkOrientation()){
-    orientationChanged = true;
-    showLoadingAnimation(() => {
-      startGame();
-      gameLoop();
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" || e.code === "ArrowUp") {
+        bird.velocity = bird.jump;
+      }
     });
-  }
 
-  // کنترل لمس فقط برای پرش آرام پرنده (اگر بازی شروع شده باشد)
-  canvas.addEventListener('touchstart', e => {
-    e.preventDefault();
-    if(!bird.dead && gameStarted){
-      bird.flap();
-    }
-  });
-
-  canvas.addEventListener('mousedown', e => {
-    if(!bird.dead && gameStarted){
-      bird.flap();
-    }
-  });
-</script>
-
+    gameLoop();
+  </script>
 </body>
 </html>
