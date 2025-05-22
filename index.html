@@ -12,7 +12,7 @@
   }
   #gameCanvas {
     display: block;
-    background: url('https://s6.uupload.ir/files/how-would-you-describe-this-angry-birds-background-v0-9rpwenf2y3nd1_0nx2.png') no-repeat center center;
+    background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_3m3r.jpg') no-repeat center center;
     background-size: cover;
     width: 100vw;
     height: 100vh;
@@ -21,17 +21,66 @@
     z-index: 1;
   }
   #rotateScreen {
-    position: fixed; bottom: 10px; right: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255,255,255,0.15);
-    font-size: 12px; font-weight: 600;
-    font-family: monospace;
-    padding: 5px 8px;
-    border-radius: 5px;
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    font-size: 32px; font-weight: 900;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px 40px;
+    border-radius: 15px;
+    border: 4px solid #00ff00;
     user-select: none;
     z-index: 1200;
     pointer-events: none;
+    text-align: center;
+    text-shadow: 
+      0 0 10px #00ff00, 
+      0 0 20px #00ff00, 
+      0 0 30px #00ff00;
+    animation: neonGlow 1s ease-in-out infinite;
     text-transform: uppercase;
+  }
+  @keyframes neonGlow {
+    0%, 100% { 
+      text-shadow: 
+        0 0 10px #00ff00, 
+        0 0 20px #00ff00, 
+        0 0 30px #00ff00;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% { 
+      text-shadow: 
+        0 0 20px #00ff00, 
+        0 0 40px #00ff00, 
+        0 0 60px #00ff00;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+  }
+  #homeScreen {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    z-index: 1100;
+    text-align: center;
+  }
+  #startButton {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ff3f3f;
+    color: #ffffff;
+    font-size: 28px; font-weight: 700;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 15px 30px;
+    border-radius: 10px;
+    border: 3px solid #ffffff;
+    cursor: pointer;
+    text-shadow: 0 0 10px #000000;
+    transition: transform 0.2s, background 0.2s;
+  }
+  #startButton:hover {
+    background: #ff0000;
+    transform: translate(-50%, -50%) scale(1.1);
   }
   #loading {
     position: fixed; top: 50%; left: 50%;
@@ -69,6 +118,9 @@
 
 <canvas id="gameCanvas"></canvas>
 <div id="rotateScreen">PLEASE ROTATE YOUR DEVICE TO LANDSCAPE</div>
+<div id="homeScreen">
+  <button id="startButton">Start Game</button>
+</div>
 <div id="loading"></div>
 <canvas id="bloodOverlay"></canvas>
 
@@ -76,6 +128,8 @@
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const rotateScreen = document.getElementById('rotateScreen');
+  const homeScreen = document.getElementById('homeScreen');
+  const startButton = document.getElementById('startButton');
   const loading = document.getElementById('loading');
   const bloodCanvas = document.getElementById('bloodOverlay');
   const bloodCtx = bloodCanvas.getContext('2d');
@@ -85,12 +139,16 @@
   let gameOver = false;
   let bird;
   let obstacles = [];
-  let speed = 2.2;
+  let speed = 3.0;
   let score = 0;
   let difficultyIncrement = 0;
-  let maxDifficulty = 3;
+  let maxDifficulty = 4;
   let loadingDuration = 3000;
   let bloodParticles = [];
+  let birdImage = new Image();
+  birdImage.src = 'https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png';
+  let startTime = 0;
+  let inHomeScreen = false;
 
   function resize() {
     W = window.innerWidth;
@@ -105,11 +163,16 @@
   function checkOrientation() {
     if(window.innerWidth < window.innerHeight){
       rotateScreen.style.display = "block";
+      homeScreen.style.display = "none";
       canvas.style.display = "none";
       bloodCanvas.style.display = "none";
       return false;
     } else {
       rotateScreen.style.display = "none";
+      if (!gameStarted && !inHomeScreen) {
+        homeScreen.style.display = "block";
+        inHomeScreen = true;
+      }
       canvas.style.display = "block";
       bloodCanvas.style.display = "block";
       return true;
@@ -118,12 +181,12 @@
 
   class Bird {
     constructor() {
-      this.radius = 22;
+      this.radius = 30;
       this.x = W / 4;
       this.y = H / 2;
       this.velocity = 0;
-      this.gravity = 0.25;
-      this.lift = -6;
+      this.gravity = 0.3;
+      this.lift = -7;
       this.isMoving = false;
       this.dead = false;
     }
@@ -152,28 +215,27 @@
     }
     draw() {
       ctx.save();
-      ctx.fillStyle = '#ffff33';
       ctx.shadowColor = 'orange';
       ctx.shadowBlur = 15;
-      ctx.beginPath();
-      ctx.ellipse(this.x, this.y, this.radius+6, this.radius, 0, 0, Math.PI*2);
-      ctx.fill();
+      if (birdImage.complete) {
+        ctx.drawImage(birdImage, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+      } else {
+        ctx.fillStyle = '#ffff33';
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, this.radius, this.radius, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
       ctx.restore();
-
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(this.x + 6, this.y - 6, 6, 0, Math.PI*2);
-      ctx.fill();
     }
   }
 
   class Obstacle {
-    constructor(x, width, heightTop, gap) {
+    constructor(x, heightTop, gap) {
       this.x = x;
-      this.width = width;
+      this.width = 60;
       this.heightTop = heightTop;
       this.gap = gap;
-      this.speed = speed;
+      this.speed = speed + (Math.random() * 0.5 - 0.25);
       this.radius = 14;
       this.bloodDrops = [];
     }
@@ -182,13 +244,14 @@
       this.x -= this.speed;
 
       if(this.x + this.width < 0){
-        this.x = W + 250 + Math.random()*200;
+        this.x = W + 200 + Math.random()*100;
         let baseHeight = Math.random()*(H - this.gap - 100) + 50;
         this.heightTop = Math.min(baseHeight + difficultyIncrement*20, H - this.gap - 40);
-        this.gap = 140 - difficultyIncrement*15;
-        if(this.gap < 90) this.gap = 90;
+        this.gap = 100 - difficultyIncrement*5;
+        if(this.gap < 80) this.gap = 80;
+        this.speed = speed + (Math.random() * 0.5 - 0.25);
         score++;
-        if(score % 5 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement++;
+        if(score % 3 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement++;
       }
 
       if(gameOver && this.x < bird.x + bird.radius && this.x + this.width > bird.x - bird.radius){
@@ -320,7 +383,6 @@
   }
 
   function createBloodFountain(x, y) {
-    bloodParticles.length = 0;
     for(let i=0; i<60; i++){
       bloodParticles.push(new BloodParticle(x, y));
     }
@@ -337,6 +399,20 @@
         p.draw();
       }
     }
+  }
+
+  function drawTimer() {
+    if (!gameStarted || gameOver) return;
+    const elapsedTime = Math.floor((performance.now() - startTime) / 1000);
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(W/2 - 50, 10, 100, 40);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '24px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${elapsedTime}s`, W/2, 30);
+    ctx.restore();
   }
 
   function showLoadingAnimation(callback) {
@@ -357,20 +433,23 @@
 
   function startGame(){
     bird = new Bird();
-    bird.isMoving = true; // فقط این خط اضافه شده
+    bird.isMoving = true;
     obstacles = [];
-    bloodParticles.length = 0;
+    bloodParticles = [];
     gameStarted = true;
     gameOver = false;
     score = 0;
     difficultyIncrement = 0;
-    speed = 2.2;
+    speed = 3.0;
+    startTime = performance.now();
+    homeScreen.style.display = 'none';
+    inHomeScreen = false;
 
     let startX = W + 200;
     for(let i=0; i<4; i++){
-      let gapSize = 140;
+      let gapSize = 100;
       let hTop = Math.random()*(H - gapSize - 100) + 50;
-      obstacles.push(new Obstacle(startX + i*250, 60, hTop, gapSize));
+      obstacles.push(new Obstacle(startX + i*200, hTop, gapSize));
     }
   }
 
@@ -390,6 +469,7 @@
 
     bird.update();
     bird.draw();
+    drawTimer();
 
     if(gameOver){
       updateBloodParticles();
@@ -400,19 +480,18 @@
     } else if(gameOver){
       setTimeout(() => {
         gameStarted = false;
+        bloodParticles = [];
+        bloodCtx.clearRect(0,0,W,H);
         showLoadingAnimation(() => {
-          startGame();
-          gameLoop();
+          homeScreen.style.display = 'block';
+          inHomeScreen = true;
         });
       }, 2500);
     }
   }
 
-  let orientationChanged = false;
-  window.addEventListener('resize', () => {
-    resize();
-    if(checkOrientation() && !orientationChanged){
-      orientationChanged = true;
+  startButton.addEventListener('click', () => {
+    if (inHomeScreen) {
       showLoadingAnimation(() => {
         startGame();
         gameLoop();
@@ -420,12 +499,30 @@
     }
   });
 
+  startButton.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (inHomeScreen) {
+      showLoadingAnimation(() => {
+        startGame();
+        gameLoop();
+      });
+    }
+  });
+
+  let orientationChanged = false;
+  window.addEventListener('resize', () => {
+    resize();
+    if(checkOrientation() && !orientationChanged){
+      orientationChanged = true;
+      homeScreen.style.display = 'block';
+      inHomeScreen = true;
+    }
+  });
+
   if(checkOrientation()){
     orientationChanged = true;
-    showLoadingAnimation(() => {
-      startGame();
-      gameLoop();
-    });
+    homeScreen.style.display = 'block';
+    inHomeScreen = true;
   }
 
   canvas.addEventListener('touchstart', e => {
