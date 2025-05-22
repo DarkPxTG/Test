@@ -1,129 +1,166 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 <head>
-  <meta charset="UTF-8">
-  <title>Counter Style FPS</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
-    #hud {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: white;
-      font-family: Arial;
-      z-index: 10;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/controls/PointerLockControls.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>Flappy Bird افقی</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; overflow: hidden; height: 100%;
+    background: #87ceeb;
+  }
+  canvas {
+    display: block;
+    background: #000;
+    touch-action: none;
+  }
+</style>
 </head>
 <body>
-  <div id="hud">Health: 100 | Ammo: 30</div>
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x202020);
+<canvas id="gameCanvas"></canvas>
 
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 1.6, 5);
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
 
-      const light = new THREE.HemisphereLight(0xffffff, 0x444444);
-      light.position.set(0, 20, 0);
-      scene.add(light);
+const BG_IMG_SRC = "https://s6.uupload.ir/files/how-would-you-describe-this-angry-birds-background-v0-9rpwenf2y3nd1_0nx2.png";
+let bgImg = new Image();
+bgImg.src = BG_IMG_SRC;
 
-      const dirLight = new THREE.DirectionalLight(0xffffff);
-      dirLight.position.set(3, 10, 10);
-      scene.add(dirLight);
+class Cloud {
+  constructor(x, y, speed) {
+    this.x = x;
+    this.y = y;
+    this.speed = speed;
+    this.radius = 20 + Math.random() * 15;
+  }
+  update() {
+    this.x -= this.speed;
+    if (this.x + this.radius * 2 < 0) {
+      this.x = canvas.width + this.radius * 2;
+      this.y = Math.random() * (canvas.height / 3);
+    }
+  }
+  draw() {
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
-      const controls = new THREE.PointerLockControls(camera, document.body);
-      document.body.addEventListener('click', () => controls.lock());
+class Obstacle {
+  constructor(x, y, width, height, speed) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.speed = speed;
+  }
+  update() {
+    this.x -= this.speed;
+    if (this.x + this.width < 0) {
+      this.x = canvas.width + Math.random() * 200;
+      this.y = Math.random() * (canvas.height - 100) + 50;
+      this.height = 40 + Math.random() * 100;
+    }
+  }
+  draw() {
+    ctx.fillStyle = "#228B22";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+}
 
-      // Floor
-      const floorGeometry = new THREE.PlaneGeometry(200, 200);
-      const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
-      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-      floor.rotation.x = -Math.PI / 2;
-      scene.add(floor);
+class Bird {
+  constructor() {
+    this.x = canvas.width / 5;
+    this.y = canvas.height / 2;
+    this.radius = 15;
+    this.gravity = 0.6;
+    this.lift = -12;
+    this.velocity = 0;
+  }
+  update() {
+    this.velocity += this.gravity;
+    this.y += this.velocity;
 
-      // Player Gun (simple box)
-      const gunGeometry = new THREE.BoxGeometry(0.3, 0.2, 1);
-      const gunMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
-      const gun = new THREE.Mesh(gunGeometry, gunMaterial);
-      gun.position.set(0.4, -0.3, -0.7);
-      camera.add(gun);
-      scene.add(camera);
+    if (this.y + this.radius > canvas.height) {
+      this.y = canvas.height - this.radius;
+      this.velocity = 0;
+    }
+    if (this.y - this.radius < 0) {
+      this.y = this.radius;
+      this.velocity = 0;
+    }
+  }
+  draw() {
+    ctx.fillStyle = "#FF4500";
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y, this.radius * 1.5, this.radius, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(this.x + 5, this.y - 5, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  flap() {
+    this.velocity = this.lift;
+  }
+}
 
-      // Enemies (simple red boxes)
-      const enemyGeometry = new THREE.BoxGeometry(1, 2, 1);
-      const enemyMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-      const enemies = [];
-      for (let i = 0; i < 5; i++) {
-        const enemy = new THREE.Mesh(enemyGeometry, enemyMaterial);
-        enemy.position.set(Math.random() * 100 - 50, 1, Math.random() * 100 - 50);
-        scene.add(enemy);
-        enemies.push(enemy);
-      }
+let bird = new Bird();
 
-      const move = { forward: false, back: false, left: false, right: false };
-      const velocity = new THREE.Vector3();
+let clouds = [];
+for (let i = 0; i < 8; i++) {
+  clouds.push(new Cloud(Math.random() * canvas.width, Math.random() * (canvas.height / 3), 0.3 + Math.random() * 0.3));
+}
 
-      document.addEventListener('keydown', e => {
-        if (e.code === 'KeyW') move.forward = true;
-        if (e.code === 'KeyS') move.back = true;
-        if (e.code === 'KeyA') move.left = true;
-        if (e.code === 'KeyD') move.right = true;
-      });
-      document.addEventListener('keyup', e => {
-        if (e.code === 'KeyW') move.forward = false;
-        if (e.code === 'KeyS') move.back = false;
-        if (e.code === 'KeyA') move.left = false;
-        if (e.code === 'KeyD') move.right = false;
-      });
+let obstacles = [];
+for (let i = 0; i < 4; i++) {
+  let x = canvas.width + i * 250;
+  let y = Math.random() * (canvas.height - 150) + 50;
+  let height = 50 + Math.random() * 100;
+  obstacles.push(new Obstacle(x, y, 40, height, 3));
+}
 
-      // Shooting effect
-      document.addEventListener('click', () => {
-        const bullet = new THREE.Mesh(
-          new THREE.SphereGeometry(0.05),
-          new THREE.MeshBasicMaterial({ color: 0xffff00 })
-        );
-        bullet.position.copy(camera.position);
-        bullet.velocity = new THREE.Vector3();
-        camera.getWorldDirection(bullet.velocity);
-        bullet.velocity.multiplyScalar(1);
-        bullet.tick = () => {
-          bullet.position.add(bullet.velocity);
-        };
-        scene.add(bullet);
-        bullets.push(bullet);
-      });
+// کنترل پرنده با لمس و کلیک
+canvas.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  bird.flap();
+}, {passive: false});
 
-      const bullets = [];
+canvas.addEventListener("mousedown", () => bird.flap());
 
-      function animate() {
-        requestAnimationFrame(animate);
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
-        const speed = 0.1;
-        velocity.set(0, 0, 0);
-        if (move.forward) velocity.z -= speed;
-        if (move.back) velocity.z += speed;
-        if (move.left) velocity.x -= speed;
-        if (move.right) velocity.x += speed;
+  clouds.forEach(cloud => {
+    cloud.update();
+    cloud.draw();
+  });
 
-        controls.moveRight(velocity.x);
-        controls.moveForward(velocity.z);
+  obstacles.forEach(obstacle => {
+    obstacle.update();
+    obstacle.draw();
+  });
 
-        bullets.forEach(bullet => bullet.tick());
+  bird.update();
+  bird.draw();
 
-        renderer.render(scene, camera);
-      }
+  requestAnimationFrame(gameLoop);
+}
 
-      animate();
-    });
-  </script>
+bgImg.onload = () => {
+  gameLoop();
+};
+</script>
 </body>
 </html>
