@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<title>Flappy Bird افقی حرفه‌ای</title>
+<title>Flappy Bird Pro</title>
 <style>
   html, body {
     margin: 0; padding: 0; overflow: hidden; height: 100%;
     background: #000;
-    font-family: 'Vazir', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   #gameCanvas {
     display: block;
@@ -59,28 +59,75 @@
   }
   #homeScreen {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
+    background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_3m3r.jpg') no-repeat center center;
+    background-size: cover;
     display: none;
     z-index: 1100;
     text-align: center;
+    overflow: hidden;
+  }
+  #homeScreen::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8));
+    z-index: 1;
+  }
+  #homeScreenContent {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  #gameTitle {
+    font-size: 48px;
+    color: #ffffff;
+    font-weight: 900;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: 
+      0 0 10px #ff3f3f,
+      0 0 20px #ff3f3f,
+      0 0 30px #ff3f3f;
+    margin-bottom: 30px;
+    animation: titlePulse 2s ease-in-out infinite;
+  }
+  @keyframes titlePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
   }
   #startButton {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: #ff3f3f;
+    background: linear-gradient(45deg, #ff3f3f, #ff0000);
     color: #ffffff;
     font-size: 28px; font-weight: 700;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 15px 30px;
-    border-radius: 10px;
+    padding: 15px 40px;
+    border-radius: 12px;
     border: 3px solid #ffffff;
     cursor: pointer;
     text-shadow: 0 0 10px #000000;
-    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 0 20px rgba(255, 63, 63, 0.8);
+    transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 3;
   }
   #startButton:hover {
-    background: #ff0000;
-    transform: translate(-50%, -50%) scale(1.1);
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(255, 0, 0, 1);
+  }
+  #floatingBird {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    width: 80px;
+    height: 80px;
+    animation: floatBird 4s ease-in-out infinite;
+    z-index: 2;
+  }
+  @keyframes floatBird {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
   }
   #loading {
     position: fixed; top: 50%; left: 50%;
@@ -112,6 +159,75 @@
     z-index: 1300;
     mix-blend-mode: multiply;
   }
+  #leaderboardButton {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #ffffff;
+    cursor: pointer;
+    z-index: 3;
+    text-shadow: 0 0 10px #ff3f3f;
+  }
+  #leaderboardButton:hover {
+    transform: scale(1.2);
+  }
+  #homeButton {
+    position: absolute;
+    top: 65px; /* کمی پایین‌تر از 60px */
+    left: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #ffffff;
+    cursor: pointer;
+    z-index: 3;
+    text-shadow: 0 0 10px #ff3f3f;
+  }
+  #homeButton:hover {
+    transform: scale(1.2);
+  }
+  #leaderboard {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    border-radius: 12px;
+    border: 3px solid #ff3f3f;
+    z-index: 1200;
+    display: none;
+    text-align: center;
+    width: 80%;
+    max-width: 400px;
+  }
+  #leaderboard h2 {
+    font-size: 32px;
+    margin: 0 0 20px;
+    text-shadow: 0 0 10px #ff3f3f;
+  }
+  #leaderboard p {
+    font-size: 24px;
+    margin: 10px 0;
+  }
+  #leaderboard button {
+    background: linear-gradient(45deg, #ff3f3f, #ff0000);
+    color: #ffffff;
+    font-size: 20px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 2px solid #ffffff;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  #leaderboard button:hover {
+    transform: scale(1.1);
+  }
 </style>
 </head>
 <body>
@@ -119,10 +235,22 @@
 <canvas id="gameCanvas"></canvas>
 <div id="rotateScreen">PLEASE ROTATE YOUR DEVICE TO LANDSCAPE</div>
 <div id="homeScreen">
-  <button id="startButton">Start Game</button>
+  <div id="homeScreenContent">
+    <button id="leaderboardButton">☰</button>
+    <button id="homeButton" title="Multiplayer Mode">🏠</button>
+    <div id="gameTitle">Flappy Bird Pro</div>
+    <button id="startButton">Start Game</button>
+    <img id="floatingBird" src="https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png" alt="Floating Bird" />
+  </div>
 </div>
 <div id="loading"></div>
 <canvas id="bloodOverlay"></canvas>
+<div id="leaderboard">
+  <h2>Leaderboard</h2>
+  <p id="currentScore">Current Score: 0</p>
+  <p id="highScore">High Score: 0</p>
+  <button id="closeLeaderboard">Close</button>
+</div>
 
 <script>
   const canvas = document.getElementById('gameCanvas');
@@ -133,22 +261,30 @@
   const loading = document.getElementById('loading');
   const bloodCanvas = document.getElementById('bloodOverlay');
   const bloodCtx = bloodCanvas.getContext('2d');
+  const leaderboardButton = document.getElementById('leaderboardButton');
+  const homeButton = document.getElementById('homeButton');
+  const leaderboard = document.getElementById('leaderboard');
+  const closeLeaderboard = document.getElementById('closeLeaderboard');
+  const currentScoreDisplay = document.getElementById('currentScore');
+  const highScoreDisplay = document.getElementById('highScore');
 
   let W, H;
   let gameStarted = false;
   let gameOver = false;
   let bird;
   let obstacles = [];
-  let speed = 3.0;
+  let speed = 2.5;
   let score = 0;
+  let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
   let difficultyIncrement = 0;
-  let maxDifficulty = 4;
+  let maxDifficulty = 3;
   let loadingDuration = 3000;
   let bloodParticles = [];
   let birdImage = new Image();
   birdImage.src = 'https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png';
   let startTime = 0;
   let inHomeScreen = false;
+  let isGameActive = false;
 
   function resize() {
     W = window.innerWidth;
@@ -161,20 +297,21 @@
   resize();
 
   function checkOrientation() {
-    if(window.innerWidth < window.innerHeight){
-      rotateScreen.style.display = "block";
-      homeScreen.style.display = "none";
-      canvas.style.display = "none";
-      bloodCanvas.style.display = "none";
+    if (window.innerWidth < window.innerHeight) {
+      rotateScreen.style.display = 'block';
+      homeScreen.style.display = 'none';
+      canvas.style.display = 'none';
+      bloodCanvas.style.display = 'none';
+      leaderboard.style.display = 'none';
       return false;
     } else {
-      rotateScreen.style.display = "none";
+      rotateScreen.style.display = 'none';
       if (!gameStarted && !inHomeScreen) {
-        homeScreen.style.display = "block";
+        homeScreen.style.display = 'block';
         inHomeScreen = true;
       }
-      canvas.style.display = "block";
-      bloodCanvas.style.display = "block";
+      canvas.style.display = 'block';
+      bloodCanvas.style.display = 'block';
       return true;
     }
   }
@@ -186,17 +323,17 @@
       this.y = H / 2;
       this.velocity = 0;
       this.gravity = 0.3;
-      this.lift = -7;
+      this.lift = -6;
       this.isMoving = false;
       this.dead = false;
     }
     update() {
-      if(!this.isMoving) return;
+      if (!this.isMoving) return;
       this.velocity += this.gravity;
-      this.velocity *= 0.98;
+      this.velocity *= 0.95;
       this.y += this.velocity;
 
-      if(this.y + this.radius > H){
+      if (this.y + this.radius > H) {
         this.y = H - this.radius;
         this.velocity = 0;
         this.dead = true;
@@ -204,14 +341,19 @@
         createBloodFountain(this.x, this.y);
         shakeScreen();
       }
-      if(this.y - this.radius < 0){
+      if (this.y - this.radius < 0) {
         this.y = this.radius;
         this.velocity = 0;
       }
     }
     flap() {
-      if(this.dead) return;
+      if (this.dead) return;
       this.velocity += this.lift;
+      if (!isGameActive) {
+        isGameActive = true;
+        this.isMoving = true;
+        obstacles.forEach(ob => ob.isMoving = true);
+      }
     }
     draw() {
       ctx.save();
@@ -222,7 +364,7 @@
       } else {
         ctx.fillStyle = '#ffff33';
         ctx.beginPath();
-        ctx.ellipse(this.x, this.y, this.radius, this.radius, 0, 0, Math.PI*2);
+        ctx.ellipse(this.x, this.y, this.radius, this.radius, 0, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.restore();
@@ -235,43 +377,44 @@
       this.width = 60;
       this.heightTop = heightTop;
       this.gap = gap;
-      this.speed = speed + (Math.random() * 0.5 - 0.25);
+      this.speed = speed + (Math.random() * 0.3 - 0.15);
       this.radius = 14;
       this.bloodDrops = [];
+      this.isMoving = false;
     }
 
     update() {
+      if (!this.isMoving) return;
       this.x -= this.speed;
 
-      if(this.x + this.width < 0){
-        this.x = W + 200 + Math.random()*100;
-        let baseHeight = Math.random()*(H - this.gap - 100) + 50;
-        this.heightTop = Math.min(baseHeight + difficultyIncrement*20, H - this.gap - 40);
-        this.gap = 100 - difficultyIncrement*5;
-        if(this.gap < 80) this.gap = 80;
-        this.speed = speed + (Math.random() * 0.5 - 0.25);
+      if (this.x + this.width < 0) {
+        this.x = W + 400 + Math.random() * 200;
+        let baseHeight = Math.random() * (H - this.gap - 100) + 50;
+        this.heightTop = Math.min(baseHeight + difficultyIncrement * 10, H - this.gap - 40);
+        this.gap = Math.max(80, 120 - difficultyIncrement * 5);
+        this.speed = Math.min(4, speed + difficultyIncrement * 0.2);
         score++;
-        if(score % 3 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement++;
+        if (score % 3 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement += 0.5;
       }
 
-      if(gameOver && this.x < bird.x + bird.radius && this.x + this.width > bird.x - bird.radius){
+      if (gameOver && this.x < bird.x + bird.radius && this.x + this.width > bird.x - bird.radius) {
         this.spawnBloodDrop();
       }
 
-      for(let i=this.bloodDrops.length-1; i>=0; i--){
+      for (let i = this.bloodDrops.length - 1; i >= 0; i--) {
         let d = this.bloodDrops[i];
         d.y += d.speed;
         d.opacity -= 0.025;
-        if(d.opacity <= 0) this.bloodDrops.splice(i,1);
+        if (d.opacity <= 0) this.bloodDrops.splice(i, 1);
       }
     }
 
     spawnBloodDrop() {
-      if(this.bloodDrops.length < 8 && Math.random() < 0.3) {
+      if (this.bloodDrops.length < 8 && Math.random() < 0.3) {
         this.bloodDrops.push({
-          x: this.x + this.width/2 + (Math.random()-0.5)*this.width/2,
+          x: this.x + this.width / 2 + (Math.random() - 0.5) * this.width / 2,
           y: this.heightTop + this.gap + this.radius,
-          speed: 2 + Math.random()*2,
+          speed: 2 + Math.random() * 2,
           opacity: 1
         });
       }
@@ -286,10 +429,10 @@
       roundRect(ctx, this.x, this.heightTop + this.gap, this.width, H - this.heightTop - this.gap, this.radius, true);
       ctx.restore();
 
-      for(let d of this.bloodDrops){
+      for (let d of this.bloodDrops) {
         ctx.beginPath();
         ctx.fillStyle = `rgba(255,0,0,${d.opacity})`;
-        ctx.arc(d.x, d.y, 5, 0, Math.PI*2);
+        ctx.arc(d.x, d.y, 5, 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -302,7 +445,7 @@
     }
   }
 
-  function roundRect(ctx, x, y, w, h, r, fill=true) {
+  function roundRect(ctx, x, y, w, h, r, fill = true) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
@@ -314,36 +457,36 @@
     ctx.lineTo(x, y + r);
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
-    if(fill) ctx.fill();
+    if (fill) ctx.fill();
   }
 
   function circleRectCollision(cx, cy, cr, rx, ry, rw, rh) {
     let testX = cx;
     let testY = cy;
 
-    if(cx < rx) testX = rx;
-    else if(cx > rx + rw) testX = rx + rw;
+    if (cx < rx) testX = rx;
+    else if (cx > rx + rw) testX = rx + rw;
 
-    if(cy < ry) testY = ry;
-    else if(cy > ry + rh) testY = ry + rh;
+    if (cy < ry) testY = ry;
+    else if (cy > ry + rh) testY = ry + rh;
 
     let distX = cx - testX;
     let distY = cy - testY;
-    let distance = Math.sqrt(distX*distX + distY*distY);
+    let distance = Math.sqrt(distX * distX + distY * distY);
 
     return distance <= cr;
   }
 
-  function shakeScreen(){
+  function shakeScreen() {
     let intensity = 6;
     let duration = 400;
     let start = performance.now();
 
-    function animate(t){
+    function animate(t) {
       let elapsed = t - start;
-      if(elapsed < duration){
-        let dx = (Math.random()*2-1)*intensity;
-        let dy = (Math.random()*2-1)*intensity;
+      if (elapsed < duration) {
+        let dx = (Math.random() * 2 - 1) * intensity;
+        let dy = (Math.random() * 2 - 1) * intensity;
         canvas.style.transform = `translate(${dx}px, ${dy}px)`;
         bloodCanvas.style.transform = `translate(${dx}px, ${dy}px)`;
         requestAnimationFrame(animate);
@@ -359,12 +502,12 @@
     constructor(x, y) {
       this.x = x;
       this.y = y;
-      this.size = 4 + Math.random()*5;
-      this.speedX = (Math.random()-0.5)*10;
-      this.speedY = - (Math.random()*10 + 10);
+      this.size = 4 + Math.random() * 5;
+      this.speedX = (Math.random() - 0.5) * 10;
+      this.speedY = - (Math.random() * 10 + 10);
       this.gravity = 0.5;
       this.opacity = 1;
-      this.fadeSpeed = 0.03 + Math.random()*0.02;
+      this.fadeSpeed = 0.03 + Math.random() * 0.02;
     }
     update() {
       this.x += this.speedX;
@@ -377,24 +520,24 @@
       bloodCtx.fillStyle = `rgba(139,0,0,${this.opacity})`;
       bloodCtx.shadowColor = 'red';
       bloodCtx.shadowBlur = 10;
-      bloodCtx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+      bloodCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
       bloodCtx.fill();
     }
   }
 
   function createBloodFountain(x, y) {
-    for(let i=0; i<60; i++){
+    for (let i = 0; i < 60; i++) {
       bloodParticles.push(new BloodParticle(x, y));
     }
   }
 
-  function updateBloodParticles(){
-    bloodCtx.clearRect(0,0,W,H);
-    for(let i=bloodParticles.length-1; i>=0; i--){
+  function updateBloodParticles() {
+    bloodCtx.clearRect(0, 0, W, H);
+    for (let i = bloodParticles.length - 1; i >= 0; i--) {
       let p = bloodParticles[i];
       p.update();
-      if(p.opacity <= 0){
-        bloodParticles.splice(i,1);
+      if (p.opacity <= 0) {
+        bloodParticles.splice(i, 1);
       } else {
         p.draw();
       }
@@ -402,24 +545,23 @@
   }
 
   function drawTimer() {
-    if (!gameStarted || gameOver) return;
+    if (!gameStarted || gameOver || !isGameActive) return;
     const elapsedTime = Math.floor((performance.now() - startTime) / 1000);
     ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(W/2 - 50, 10, 100, 40);
     ctx.fillStyle = '#ffffff';
     ctx.font = '24px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${elapsedTime}s`, W/2, 30);
+    ctx.fillText(`${elapsedTime}s`, W / 2, 30);
     ctx.restore();
+    return elapsedTime;
   }
 
   function showLoadingAnimation(callback) {
     loading.style.display = 'block';
-    loading.innerHTML = ''; 
+    loading.innerHTML = '';
     const text = 'LOADING';
-    for(let i=0; i<text.length; i++){
+    for (let i = 0; i < text.length; i++) {
       let span = document.createElement('span');
       span.textContent = text[i];
       span.style.animationDelay = `${i * 0.15}s`;
@@ -431,35 +573,47 @@
     }, loadingDuration);
   }
 
-  function startGame(){
+  function updateLeaderboard() {
+    currentScoreDisplay.textContent = `Current Score: ${score}`;
+    highScoreDisplay.textContent = `High Score: ${highScore}`;
+  }
+
+  function startGame() {
     bird = new Bird();
-    bird.isMoving = true;
     obstacles = [];
     bloodParticles = [];
     gameStarted = true;
     gameOver = false;
     score = 0;
     difficultyIncrement = 0;
-    speed = 3.0;
+    speed = 2.5;
     startTime = performance.now();
     homeScreen.style.display = 'none';
+    leaderboard.style.display = 'none';
     inHomeScreen = false;
+    isGameActive = false;
 
-    let startX = W + 200;
-    for(let i=0; i<4; i++){
-      let gapSize = 100;
-      let hTop = Math.random()*(H - gapSize - 100) + 50;
-      obstacles.push(new Obstacle(startX + i*200, hTop, gapSize));
+    let startX = W + 400;
+    for (let i = 0; i < 4; i++) {
+      let gapSize = 120;
+      let hTop = Math.random() * (H - gapSize - 100) + 50;
+      obstacles.push(new Obstacle(startX + i * 400, hTop, gapSize));
     }
+    updateLeaderboard();
   }
 
-  function gameLoop(){
-    ctx.clearRect(0,0,W,H);
+  function gameLoop() {
+    ctx.clearRect(0, 0, W, H);
+
+    const elapsedTime = drawTimer();
+    if (elapsedTime >= 20 && difficultyIncrement < maxDifficulty) {
+      difficultyIncrement = Math.min(maxDifficulty, difficultyIncrement + (elapsedTime - 20) * 0.02);
+    }
 
     obstacles.forEach(ob => {
       ob.update();
       ob.draw();
-      if(ob.checkCollision(bird) && !bird.dead){
+      if (ob.checkCollision(bird) && !bird.dead) {
         bird.dead = true;
         gameOver = true;
         createBloodFountain(bird.x, bird.y);
@@ -469,22 +623,27 @@
 
     bird.update();
     bird.draw();
-    drawTimer();
 
-    if(gameOver){
+    if (gameOver) {
       updateBloodParticles();
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+        updateLeaderboard();
+      }
     }
 
-    if(!gameOver && gameStarted){
+    if (!gameOver && gameStarted) {
       requestAnimationFrame(gameLoop);
-    } else if(gameOver){
+    } else if (gameOver) {
       setTimeout(() => {
         gameStarted = false;
         bloodParticles = [];
-        bloodCtx.clearRect(0,0,W,H);
+        bloodCtx.clearRect(0, 0, W, H);
         showLoadingAnimation(() => {
           homeScreen.style.display = 'block';
           inHomeScreen = true;
+          updateLeaderboard();
         });
       }, 2500);
     }
@@ -492,34 +651,67 @@
 
   startButton.addEventListener('click', () => {
     if (inHomeScreen) {
-      showLoadingAnimation(() => {
-        startGame();
-        gameLoop();
-      });
+      startGame();
+      gameLoop();
     }
   });
 
   startButton.addEventListener('touchstart', e => {
     e.preventDefault();
     if (inHomeScreen) {
-      showLoadingAnimation(() => {
-        startGame();
-        gameLoop();
-      });
+      startGame();
+      gameLoop();
     }
+  });
+
+  leaderboardButton.addEventListener('click', () => {
+    if (inHomeScreen) {
+      leaderboard.style.display = 'block';
+      updateLeaderboard();
+    }
+  });
+
+  leaderboardButton.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (inHomeScreen) {
+      leaderboard.style.display = 'block';
+      updateLeaderboard();
+    }
+  });
+
+  homeButton.addEventListener('click', () => {
+    if (inHomeScreen) {
+      alert('Multiplayer mode will be added soon!');
+    }
+  });
+
+  homeButton.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (inHomeScreen) {
+      alert('Multiplayer mode will be added soon!');
+    }
+  });
+
+  closeLeaderboard.addEventListener('click', () => {
+    leaderboard.style.display = 'none';
+  });
+
+  closeLeaderboard.addEventListener('touchstart', e => {
+    e.preventDefault();
+    leaderboard.style.display = 'none';
   });
 
   let orientationChanged = false;
   window.addEventListener('resize', () => {
     resize();
-    if(checkOrientation() && !orientationChanged){
+    if (checkOrientation() && !orientationChanged) {
       orientationChanged = true;
       homeScreen.style.display = 'block';
       inHomeScreen = true;
     }
   });
 
-  if(checkOrientation()){
+  if (checkOrientation()) {
     orientationChanged = true;
     homeScreen.style.display = 'block';
     inHomeScreen = true;
@@ -527,13 +719,13 @@
 
   canvas.addEventListener('touchstart', e => {
     e.preventDefault();
-    if(!bird.dead && gameStarted){
+    if (!bird.dead && gameStarted) {
       bird.flap();
     }
   });
 
   canvas.addEventListener('mousedown', e => {
-    if(!bird.dead && gameStarted){
+    if (!bird.dead && gameStarted) {
       bird.flap();
     }
   });
