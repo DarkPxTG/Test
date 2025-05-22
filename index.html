@@ -21,17 +21,27 @@
     z-index: 1;
   }
   #rotateScreen {
-    position: fixed; bottom: 10px; right: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255,255,255,0.15);
-    font-size: 12px; font-weight: 600;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
     font-family: monospace;
-    padding: 5px 8px;
-    border-radius: 5px;
-    user-select: none;
+    padding: 14px 20px;
+    border: 2px dashed #fff;
+    border-radius: 10px;
+    text-align: center;
     z-index: 1200;
     pointer-events: none;
-    text-transform: uppercase;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.7; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
   }
   #loading {
     position: fixed; top: 50%; left: 50%;
@@ -69,7 +79,7 @@
 
 <canvas id="gameCanvas"></canvas>
 <div id="rotateScreen">PLEASE ROTATE YOUR DEVICE TO LANDSCAPE</div>
-<div id="loading"></div>
+<div id="loading"><span>LOADING</span></div>
 <canvas id="bloodOverlay"></canvas>
 
 <script>
@@ -84,6 +94,8 @@
   let gameStarted = false;
   let gameOver = false;
   let bird;
+  let birdImg = new Image();
+  birdImg.src = "https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png";
   let obstacles = [];
   let speed = 2.2;
   let score = 0;
@@ -152,295 +164,173 @@
     }
     draw() {
       ctx.save();
-      ctx.fillStyle = '#ffff33';
-      ctx.shadowColor = 'orange';
-      ctx.shadowBlur = 15;
-      ctx.beginPath();
-      ctx.ellipse(this.x, this.y, this.radius+6, this.radius, 0, 0, Math.PI*2);
-      ctx.fill();
+      ctx.drawImage(birdImg, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
       ctx.restore();
-
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(this.x + 6, this.y - 6, 6, 0, Math.PI*2);
-      ctx.fill();
     }
   }
 
   class Obstacle {
-    constructor(x, width, heightTop, gap) {
-      this.x = x;
-      this.width = width;
-      this.heightTop = heightTop;
-      this.gap = gap;
+    constructor() {
+      this.top = Math.random() * (H / 2);
+      this.bottom = H - (this.top + 180);
+      this.x = W;
+      this.w = 50;
       this.speed = speed;
-      this.radius = 14;
-      this.bloodDrops = [];
     }
-
     update() {
       this.x -= this.speed;
-
-      if(this.x + this.width < 0){
-        this.x = W + 250 + Math.random()*200;
-        let baseHeight = Math.random()*(H - this.gap - 100) + 50;
-        this.heightTop = Math.min(baseHeight + difficultyIncrement*20, H - this.gap - 40);
-        this.gap = 140 - difficultyIncrement*15;
-        if(this.gap < 90) this.gap = 90;
-        score++;
-        if(score % 5 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement++;
-      }
-
-      if(gameOver && this.x < bird.x + bird.radius && this.x + this.width > bird.x - bird.radius){
-        this.spawnBloodDrop();
-      }
-
-      for(let i=this.bloodDrops.length-1; i>=0; i--){
-        let d = this.bloodDrops[i];
-        d.y += d.speed;
-        d.opacity -= 0.025;
-        if(d.opacity <= 0) this.bloodDrops.splice(i,1);
-      }
     }
-
-    spawnBloodDrop() {
-      if(this.bloodDrops.length < 8 && Math.random() < 0.3) {
-        this.bloodDrops.push({
-          x: this.x + this.width/2 + (Math.random()-0.5)*this.width/2,
-          y: this.heightTop + this.gap + this.radius,
-          speed: 2 + Math.random()*2,
-          opacity: 1
-        });
-      }
-    }
-
     draw() {
-      ctx.save();
-      ctx.fillStyle = '#8B0000';
-      ctx.shadowColor = 'red';
-      ctx.shadowBlur = 16;
-      roundRect(ctx, this.x, 0, this.width, this.heightTop, this.radius, true);
-      roundRect(ctx, this.x, this.heightTop + this.gap, this.width, H - this.heightTop - this.gap, this.radius, true);
-      ctx.restore();
-
-      for(let d of this.bloodDrops){
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(255,0,0,${d.opacity})`;
-        ctx.arc(d.x, d.y, 5, 0, Math.PI*2);
-        ctx.fill();
-      }
+      ctx.fillStyle = "#0f0";
+      ctx.fillRect(this.x, 0, this.w, this.top);
+      ctx.fillRect(this.x, H - this.bottom, this.w, this.bottom);
     }
-
-    checkCollision(bird) {
+    hits(bird) {
       return (
-        circleRectCollision(bird.x, bird.y, bird.radius, this.x, 0, this.width, this.heightTop) ||
-        circleRectCollision(bird.x, bird.y, bird.radius, this.x, this.heightTop + this.gap, this.width, H - this.heightTop - this.gap)
+        bird.x + bird.radius > this.x &&
+        bird.x - bird.radius < this.x + this.w &&
+        (bird.y - bird.radius < this.top || bird.y + bird.radius > H - this.bottom)
       );
     }
-  }
-
-  function roundRect(ctx, x, y, w, h, r, fill=true) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-    if(fill) ctx.fill();
-  }
-
-  function circleRectCollision(cx, cy, cr, rx, ry, rw, rh) {
-    let testX = cx;
-    let testY = cy;
-
-    if(cx < rx) testX = rx;
-    else if(cx > rx + rw) testX = rx + rw;
-
-    if(cy < ry) testY = ry;
-    else if(cy > ry + rh) testY = ry + rh;
-
-    let distX = cx - testX;
-    let distY = cy - testY;
-    let distance = Math.sqrt(distX*distX + distY*distY);
-
-    return distance <= cr;
-  }
-
-  function shakeScreen(){
-    let intensity = 6;
-    let duration = 400;
-    let start = performance.now();
-
-    function animate(t){
-      let elapsed = t - start;
-      if(elapsed < duration){
-        let dx = (Math.random()*2-1)*intensity;
-        let dy = (Math.random()*2-1)*intensity;
-        canvas.style.transform = `translate(${dx}px, ${dy}px)`;
-        bloodCanvas.style.transform = `translate(${dx}px, ${dy}px)`;
-        requestAnimationFrame(animate);
-      } else {
-        canvas.style.transform = 'translate(0,0)';
-        bloodCanvas.style.transform = 'translate(0,0)';
-      }
-    }
-    requestAnimationFrame(animate);
   }
 
   class BloodParticle {
     constructor(x, y) {
       this.x = x;
       this.y = y;
-      this.size = 4 + Math.random()*5;
-      this.speedX = (Math.random()-0.5)*10;
-      this.speedY = - (Math.random()*10 + 10);
-      this.gravity = 0.5;
-      this.opacity = 1;
-      this.fadeSpeed = 0.03 + Math.random()*0.02;
+      this.vx = (Math.random() - 0.5) * 10;
+      this.vy = (Math.random() - 0.5) * 10;
+      this.alpha = 1;
     }
     update() {
-      this.x += this.speedX;
-      this.y += this.speedY;
-      this.speedY += this.gravity;
-      this.opacity -= this.fadeSpeed;
+      this.x += this.vx;
+      this.y += this.vy;
+      this.vy += 0.2;
+      this.alpha -= 0.02;
     }
     draw() {
+      bloodCtx.fillStyle = `rgba(255, 0, 0, ${this.alpha})`;
       bloodCtx.beginPath();
-      bloodCtx.fillStyle = `rgba(139,0,0,${this.opacity})`;
-      bloodCtx.shadowColor = 'red';
-      bloodCtx.shadowBlur = 10;
-      bloodCtx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+      bloodCtx.arc(this.x, this.y, 4, 0, Math.PI * 2);
       bloodCtx.fill();
     }
   }
 
   function createBloodFountain(x, y) {
-    bloodParticles.length = 0;
-    for(let i=0; i<60; i++){
+    for(let i=0; i<30; i++){
       bloodParticles.push(new BloodParticle(x, y));
     }
   }
 
-  function updateBloodParticles(){
-    bloodCtx.clearRect(0,0,W,H);
-    for(let i=bloodParticles.length-1; i>=0; i--){
+  function updateBloodParticles() {
+    bloodCtx.clearRect(0, 0, W, H);
+    for(let i = bloodParticles.length - 1; i >= 0; i--){
       let p = bloodParticles[i];
       p.update();
-      if(p.opacity <= 0){
-        bloodParticles.splice(i,1);
-      } else {
-        p.draw();
+      p.draw();
+      if(p.alpha <= 0){
+        bloodParticles.splice(i, 1);
       }
     }
   }
 
-  function showLoadingAnimation(callback) {
-    loading.style.display = 'block';
-    loading.innerHTML = ''; 
-    const text = 'LOADING';
-    for(let i=0; i<text.length; i++){
-      let span = document.createElement('span');
-      span.textContent = text[i];
-      span.style.animationDelay = `${i * 0.15}s`;
-      loading.appendChild(span);
-    }
-    setTimeout(() => {
-      loading.style.display = 'none';
-      callback();
-    }, loadingDuration);
-  }
-
-  function startGame(){
-    bird = new Bird();
-    bird.isMoving = true; // فقط این خط اضافه شده
-    obstacles = [];
-    bloodParticles.length = 0;
-    gameStarted = true;
-    gameOver = false;
-    score = 0;
-    difficultyIncrement = 0;
-    speed = 2.2;
-
-    let startX = W + 200;
-    for(let i=0; i<4; i++){
-      let gapSize = 140;
-      let hTop = Math.random()*(H - gapSize - 100) + 50;
-      obstacles.push(new Obstacle(startX + i*250, 60, hTop, gapSize));
-    }
-  }
-
-  function gameLoop(){
-    ctx.clearRect(0,0,W,H);
-
-    obstacles.forEach(ob => {
-      ob.update();
-      ob.draw();
-      if(ob.checkCollision(bird) && !bird.dead){
-        bird.dead = true;
-        gameOver = true;
-        createBloodFountain(bird.x, bird.y);
-        shakeScreen();
+  function shakeScreen() {
+    let shake = 0;
+    const interval = setInterval(() => {
+      shake++;
+      canvas.style.transform = `translate(${(Math.random() - 0.5) * 10}px, ${(Math.random() - 0.5) * 10}px)`;
+      if(shake > 10){
+        clearInterval(interval);
+        canvas.style.transform = "translate(0, 0)";
       }
-    });
+    }, 50);
+  }
 
+  function gameLoop() {
+    if(!checkOrientation()) return;
+
+    ctx.clearRect(0, 0, W, H);
     bird.update();
     bird.draw();
 
-    if(gameOver){
-      updateBloodParticles();
+    if(!gameOver){
+      if(frameCount % 100 === 0){
+        obstacles.push(new Obstacle());
+      }
+      for(let i = obstacles.length - 1; i >= 0; i--){
+        obstacles[i].update();
+        obstacles[i].draw();
+
+        if(obstacles[i].hits(bird)){
+          bird.dead = true;
+          gameOver = true;
+          createBloodFountain(bird.x, bird.y);
+          shakeScreen();
+        }
+
+        if(obstacles[i].x + obstacles[i].w < 0){
+          obstacles.splice(i, 1);
+          score++;
+          if(difficultyIncrement < maxDifficulty){
+            speed += 0.2;
+            difficultyIncrement++;
+          }
+        }
+      }
+    } else {
+      ctx.fillStyle = "#fff";
+      ctx.font = "36px sans-serif";
+      ctx.fillText("Game Over!", W / 2 - 100, H / 2);
     }
 
-    if(!gameOver && gameStarted){
-      requestAnimationFrame(gameLoop);
-    } else if(gameOver){
-      setTimeout(() => {
-        gameStarted = false;
-        showLoadingAnimation(() => {
-          startGame();
-          gameLoop();
-        });
-      }, 2500);
-    }
+    ctx.fillStyle = "#fff";
+    ctx.font = "24px sans-serif";
+    ctx.fillText("Score: " + score, 20, 40);
+
+    updateBloodParticles();
+    frameCount++;
+    requestAnimationFrame(gameLoop);
   }
 
-  let orientationChanged = false;
-  window.addEventListener('resize', () => {
-    resize();
-    if(checkOrientation() && !orientationChanged){
-      orientationChanged = true;
-      showLoadingAnimation(() => {
-        startGame();
-        gameLoop();
-      });
-    }
-  });
+  let frameCount = 0;
 
-  if(checkOrientation()){
-    orientationChanged = true;
-    showLoadingAnimation(() => {
-      startGame();
+  function startGame() {
+    loading.style.display = "block";
+    setTimeout(() => {
+      loading.style.display = "none";
+      bird = new Bird();
+      obstacles = [];
+      score = 0;
+      speed = 2.2;
+      difficultyIncrement = 0;
+      gameOver = false;
+      gameStarted = true;
       gameLoop();
-    });
+    }, loadingDuration);
   }
 
-  canvas.addEventListener('touchstart', e => {
-    e.preventDefault();
-    if(!bird.dead && gameStarted){
+  window.addEventListener("resize", () => {
+    resize();
+    checkOrientation();
+  });
+
+  window.addEventListener("click", () => {
+    if(!gameStarted){
+      startGame();
+    } else {
       bird.flap();
     }
   });
 
-  canvas.addEventListener('mousedown', e => {
-    if(!bird.dead && gameStarted){
+  window.addEventListener("touchstart", () => {
+    if(!gameStarted){
+      startGame();
+    } else {
       bird.flap();
     }
   });
+
+  checkOrientation();
 </script>
-
 </body>
 </html>
