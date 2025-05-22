@@ -2,33 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, orientation=landscape" />
-<meta name="screen-orientation" content="landscape">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 <title>Flappy Bird Pro</title>
 <style>
   html, body {
-    margin: 0; padding: 0; overflow: hidden; height: 100%;
+    margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw;
     background: #000;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 100vw;
-    height: 100vh;
-  }
-  /* اطمینان از حالت افقی در تمام دستگاه‌ها */
-  @media (orientation: portrait) {
-    html, body {
-      transform: rotate(90deg);
-      transform-origin: center center;
-      width: 100vh;
-      height: 100vw;
-      position: fixed;
-      top: 0;
-      left: 0;
-    }
-  }
-  @media (orientation: landscape) {
-    html, body {
-      transform: none;
-    }
   }
   #gameCanvas {
     display: block;
@@ -51,43 +31,33 @@
     overflow: hidden;
   }
   #loadingLogo {
-    width: 120px;
-    height: 120px;
-    animation: dynamicLogo 2s ease-in-out infinite;
+    width: 100px; height: 100px; /* کوچکتر برای بارگذاری سریع‌تر */
+    animation: dynamicLogo 1.5s ease-in-out infinite;
   }
   @keyframes dynamicLogo {
-    0% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-20px) rotate(10deg); }
-    100% { transform: translateY(0) rotate(0deg); }
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+    100% { transform: translateY(0); }
   }
   #loadingText {
     color: #ff3f3f;
-    font-size: 36px;
+    font-size: 30px; /* کوچکتر برای عملکرد بهتر */
     font-weight: 900;
-    text-shadow: 0 0 15px #ff3f3f, 0 0 30px #ff3f3f;
-    margin-top: 20px;
-    letter-spacing: 4px;
-    animation: neonText 1.5s ease-in-out infinite;
-  }
-  @keyframes neonText {
-    0% { color: #ff3f3f; text-shadow: 0 0 15px #ff3f3f, 0 0 30px #ff3f3f; }
-    50% { color: #ff8c00; text-shadow: 0 0 15px #ff8c00, 0 0 30px #ff8c00; }
-    100% { color: #ff3f3f; text-shadow: 0 0 15px #ff3f3f, 0 0 30px #ff3f3f; }
+    text-shadow: 0 0 10px #ff3f3f;
+    margin-top: 15px;
+    letter-spacing: 3px;
   }
   #loadingText span {
     display: inline-block;
-    animation: bounce 1s infinite ease-in-out;
+    animation: bounce 0.8s infinite ease-in-out;
   }
   @keyframes bounce {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+    50% { transform: translateY(-5px); }
   }
   #particleCanvas {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     z-index: 1499;
   }
   #homeScreen {
@@ -116,15 +86,11 @@
     align-items: center;
   }
   #gameTitle {
-    font-size: 48px;
+    font-size: 40px;
     color: #ffffff;
     font-weight: 900;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    text-shadow: 
-      0 0 10px #ff3f3f,
-      0 0 20px #ff3f3f,
-      0 0 30px #ff3f3f;
-    margin-bottom: 30px;
+    text-shadow: 0 0 10px #ff3f3f;
+    margin-bottom: 25px;
     animation: titlePulse 2s ease-in-out infinite;
   }
   @keyframes titlePulse {
@@ -134,122 +100,101 @@
   #startButton {
     background: linear-gradient(45deg, #ff3f3f, #ff0000);
     color: #ffffff;
-    font-size: 28px; font-weight: 700;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 15px 40px;
-    border-radius: 12px;
-    border: 3px solid #ffffff;
+    font-size: 24px; font-weight: 700;
+    padding: 12px 35px;
+    border-radius: 10px;
+    border: 2px solid #ffffff;
     cursor: pointer;
-    text-shadow: 0 0 10px #000000;
-    box-shadow: 0 0 20px rgba(255, 63, 63, 0.8);
-    transition: transform 0.2s, box-shadow 0.2s;
+    text-shadow: 0 0 5px #000000;
+    box-shadow: 0 0 15px rgba(255, 63, 63, 0.8);
+    transition: transform 0.2s;
     z-index: 3;
   }
   #startButton:hover {
     transform: scale(1.1);
-    box-shadow: 0 0 30px rgba(255, 0, 0, 1);
   }
   #floatingBird {
     position: absolute;
-    top: 20%;
-    left: 20%;
-    width: 80px;
-    height: 80px;
+    top: 15%;
+    left: 15%;
+    width: 70px; height: 70px;
     animation: floatBird 4s ease-in-out infinite;
     z-index: 2;
   }
   @keyframes floatBird {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-20px) rotate(5deg); }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
   }
   #loading {
     position: fixed; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 36px; color: #ff3f3f;
+    font-size: 30px; color: #ff3f3f;
     font-weight: 900;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    text-shadow:
-      0 0 15px #ff3f3f,
-      0 0 30px #ff3f3f,
-      0 0 40px #ff3f3f,
-      0 0 60px #ff3f3f;
-    letter-spacing: 6px;
+    text-shadow: 0 0 10px #ff3f3f;
+    letter-spacing: 5px;
     display: none;
     z-index: 1100;
     user-select: none;
   }
   #loading span {
     display: inline-block;
-    animation: wave 1.5s infinite ease-in-out;
+    animation: wave 1.2s infinite ease-in-out;
+  }
+  @keyframes wave {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
   }
   #bloodOverlay {
-    position: fixed; top:0; left:0; width:100vw; height:100vh;
-    pointer-events:none;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none;
     z-index: 1300;
     mix-blend-mode: multiply;
   }
-  #leaderboardButton {
+  #leaderboardButton, #settingsButton {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    background: none;
-    border: none;
-    font-size: 28px;
-    color: #ffffff;
-    cursor: pointer;
-    z-index: 3;
+    background: none; border: none;
+    font-size: 24px; color: #ffffff;
+    cursor: pointer; z-index: 3;
     text-shadow: 0 0 10px #ff3f3f;
   }
-  #leaderboardButton:hover {
-    transform: scale(1.2);
+  #leaderboardButton {
+    top: 15px; left: 15px;
   }
   #settingsButton {
-    position: absolute;
-    top: 65px;
-    left: 20px;
-    background: none;
-    border daarom; none;
-    font-size: 28px;
-    color: #ffffff;
-    cursor: pointer;
-    z-index: 3;
-    text-shadow: 0 0 10px #ff3f3f;
+    top: 55px; left: 15px;
   }
-  #settingsButton:hover {
+  #leaderboardButton:hover, #settingsButton:hover {
     transform: scale(1.2);
   }
   #leaderboard, #settingsMenu {
-    position: fixed;
-    top: 50%;
-    left: 50%;
+    position: fixed; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.9);
     color: #ffffff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 15px;
-    border-radius: 12px;
-    border: 3px solid #ff3f3f;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #ff3f3f;
     z-index: 1200;
     display: none;
     text-align: center;
-    width: 80%;
-    max-width: 320px;
+    width: 80%; max-width: 300px;
   }
   #leaderboard h2, #settingsMenu h2 {
-    font-size: 28px;
-    margin: 0 0 15px;
+    font-size: 24px;
+    margin: 0 0 12px;
     text-shadow: 0 0 10px #ff3f3f;
   }
   #leaderboard p, #settingsMenu p {
-    font-size: 18px;
+    font-size: 16px;
     margin: 5px 0;
   }
   #leaderboard button, #settingsMenu button {
     background: linear-gradient(45deg, #ff3f3f, #ff0000);
     color: #ffffff;
-    font-size: 16px;
-    padding: 8px 16px;
-    border-radius: 8px;
+    font-size: 14px;
+    padding: 6px 14px;
+    border-radius: 6px;
     border: 2px solid #ffffff;
     cursor: pointer;
     margin: 5px;
@@ -258,42 +203,40 @@
     transform: scale(1.1);
   }
   #settingsMenu .slider-container {
-    margin: 10px 0;
+    margin: 8px 0;
   }
   #settingsMenu input[type="range"] {
     width: 100%;
     -webkit-appearance: none;
     background: #333;
     border-radius: 5px;
-    height: 8px;
+    height: 6px;
     outline: none;
   }
   #settingsMenu input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 18px; height: 18px;
     background: #ff3f3f;
     border: 2px solid #ffffff;
     border-radius: 50%;
     cursor: pointer;
   }
   #settingsMenu input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 18px; height: 18px;
     background: #ff3f3f;
     border: 2px solid #ffffff;
     border-radius: 50%;
     cursor: pointer;
   }
   #settingsMenu .slider-value {
-    font-size: 14px;
+    font-size: 12px;
     color: #ffffff;
     margin-top: 5px;
   }
   #settingsMenu .button-container {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
   }
 </style>
 </head>
@@ -302,7 +245,7 @@
 <canvas id="gameCanvas"></canvas>
 <div id="loadingScreen">
   <canvas id="particleCanvas"></canvas>
-  <img id="loadingLogo" src="https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png" alt="Loading Logo" />
+  <img id="loadingLogo" src="https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png" alt="Loading Logo" loading="lazy" />
   <div id="loadingText">LOADING</div>
 </div>
 <div id="homeScreen">
@@ -311,7 +254,7 @@
     <button id="settingsButton" title="Settings">⚙️</button>
     <div id="gameTitle">Flappy Bird Pro</div>
     <button id="startButton">Start Game</button>
-    <img id="floatingBird" src="https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png" alt="Floating Bird" />
+    <img id="floatingBird" src="https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png" alt="Floating Bird" loading="lazy" />
   </div>
 </div>
 <div id="loading"></div>
@@ -362,7 +305,7 @@
   const closeLeaderboard = document.getElementById('closeLeaderboard');
   const settingsMenu = document.getElementById('settingsMenu');
   const closeSettings = document.getElementById('closeSettings');
-  const resetSettings = Document.getElementById('resetSettings');
+  const resetSettings = document.getElementById('resetSettings');
   const birdSpeedSlider = document.getElementById('birdSpeed');
   const fallFlySpeedSlider = document.getElementById('fallFlySpeed');
   const gameDifficultySlider = document.getElementById('gameDifficulty');
@@ -377,13 +320,13 @@
   let gameOver = false;
   let bird;
   let obstacles = [];
-  let speed = 2.5; // پیش‌فرض: Normal
+  let speed = 2.5;
   let score = 0;
   let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
   let difficultyIncrement = 0;
-  let maxDifficulty = 3; // پیش‌فرض: Normal
-  let minGap = 80; // پیش‌فرض: Normal
-  let loadingDuration = 3000;
+  let maxDifficulty = 3;
+  let minGap = 80;
+  let loadingDuration = 3000; // 3 ثانیه
   let bloodParticles = [];
   let birdImage = new Image();
   birdImage.src = 'https://s6.uupload.ir/files/a-vibrant-blue-and-yellow-bird-in-mid-flight-cut-out-stock-png_ohfh.png';
@@ -391,27 +334,27 @@
   let inHomeScreen = false;
   let isGameActive = false;
 
-  // ذرات برای صفحه لودینگ
+  // ذرات برای لودینگ (کاهش تعداد به 20)
   let particles = [];
   class Particle {
     constructor() {
       this.x = Math.random() * particleCanvas.width;
       this.y = Math.random() * particleCanvas.height;
-      this.size = Math.random() * 5 + 2;
-      this.speedX = (Math.random() * 2 - 1) * 2;
-      this.speedY = (Math.random() * 2 - 1) * 2;
-      this.opacity = Math.random() * 0.5 + 0.5;
+      this.size = Math.random() * 4 + 1;
+      this.speedX = (Math.random() * 1.5 - 0.75);
+      this.speedY = (Math.random() * 1.5 - 0.75);
+      this.opacity = Math.random() * 0.4 + 0.3;
     }
     update() {
       this.x += this.speedX;
       this.y += this.speedY;
-      this.opacity -= 0.005;
+      this.opacity -= 0.01;
       if (this.x < 0 || this.x > particleCanvas.width) this.speedX *= -1;
       if (this.y < 0 || this.y > particleCanvas.height) this.speedY *= -1;
       if (this.opacity <= 0) {
         this.x = Math.random() * particleCanvas.width;
         this.y = Math.random() * particleCanvas.height;
-        this.opacity = Math.random() * 0.5 + 0.5;
+        this.opacity = Math.random() * 0.4 + 0.3;
       }
     }
     draw() {
@@ -424,7 +367,7 @@
 
   function initParticles() {
     particles = [];
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 20; i++) {
       particles.push(new Particle());
     }
   }
@@ -440,24 +383,20 @@
     }
   }
 
-  // تنظیمات پیش‌فرض
   const defaultSettings = {
     birdSpeed: 2.5,
     fallFlySpeed: 1,
     gameDifficulty: 2
   };
 
-  // بارگذاری تنظیمات از localStorage یا استفاده از پیش‌فرض
   let settings = JSON.parse(localStorage.getItem('flappyBirdSettings')) || defaultSettings;
   applySettings();
 
   function applySettings() {
-    // Bird Speed
     speed = parseFloat(settings.birdSpeed);
     birdSpeedSlider.value = speed;
     birdSpeedValue.textContent = speed === 1.5 ? 'Slow' : speed === 2.5 ? 'Normal' : 'Fast';
 
-    // Fall/Fly Speed
     if (bird) {
       switch (parseInt(settings.fallFlySpeed)) {
         case 0:
@@ -479,7 +418,6 @@
     }
     fallFlySpeedSlider.value = settings.fallFlySpeed;
 
-    // Game Difficulty
     switch (parseInt(settings.gameDifficulty)) {
       case 0:
         maxDifficulty = 1;
@@ -509,7 +447,6 @@
     }
     gameDifficultySlider.value = settings.gameDifficulty;
 
-    // ذخیره تنظیمات
     localStorage.setItem('flappyBirdSettings', JSON.stringify(settings));
   }
 
@@ -521,17 +458,21 @@
   function resize() {
     W = window.innerWidth;
     H = window.innerHeight;
+    // اطمینان از جهت افقی: عرض بیشتر از ارتفاع
+    if (W < H) {
+      W = window.innerHeight;
+      H = window.innerWidth;
+    }
     canvas.width = W;
     canvas.height = H;
     bloodCanvas.width = W;
     bloodCanvas.height = H;
     particleCanvas.width = W;
     particleCanvas.height = H;
-    initParticles(); // بازنشانی ذرات هنگام تغییر اندازه
+    initParticles();
   }
   resize();
 
-  // نمایش صفحه لودینگ و سپس لابی
   window.addEventListener('load', () => {
     loadingScreen.style.display = 'flex';
     const text = 'LOADING';
@@ -540,7 +481,7 @@
     for (let i = 0; i < text.length; i++) {
       let span = document.createElement('span');
       span.textContent = text[i];
-      span.style.animationDelay = `${i * 0.15}s`;
+      span.style.animationDelay = `${i * 0.1}s`;
       loadingText.appendChild(span);
     }
     initParticles();
@@ -549,20 +490,20 @@
       loadingScreen.style.display = 'none';
       homeScreen.style.display = 'block';
       inHomeScreen = true;
-    }, 4000); // 4 ثانیه
+    }, 3000); // 3 ثانیه
   });
 
   class Bird {
     constructor() {
-      this.radius = 30;
+      this.radius = 25;
       this.x = W / 4;
       this.y = H / 2;
       this.velocity = 0;
-      this.gravity = 0.3; // پیش‌فرض: Normal
-      this.lift = -6; // پیش‌فرض: Normal
+      this.gravity = 0.3;
+      this.lift = -6;
       this.isMoving = false;
       this.dead = false;
-      applySettings(); // اعمال تنظیمات برای gravity و lift
+      applySettings();
     }
     update() {
       if (!this.isMoving) return;
@@ -595,7 +536,7 @@
     draw() {
       ctx.save();
       ctx.shadowColor = 'orange';
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 10;
       if (birdImage.complete) {
         ctx.drawImage(birdImage, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
       } else {
@@ -611,15 +552,14 @@
   class Obstacle {
     constructor(x, heightTop, gap) {
       this.x = x;
-      this.width = 60;
+      this.width = 50;
       this.heightTop = heightTop;
       this.gap = gap;
       this.speed = speed + (Math.random() * 0.3 - 0.15);
-      this.radius = 14;
+      this.radius = 12;
       this.bloodDrops = [];
       this.isMoving = false;
     }
-
     update() {
       if (!this.isMoving) return;
       this.x -= this.speed;
@@ -645,7 +585,6 @@
         if (d.opacity <= 0) this.bloodDrops.splice(i, 1);
       }
     }
-
     spawnBloodDrop() {
       if (this.bloodDrops.length < 8 && Math.random() < 0.3) {
         this.bloodDrops.push({
@@ -656,12 +595,11 @@
         });
       }
     }
-
     draw() {
       ctx.save();
       ctx.fillStyle = '#8B0000';
       ctx.shadowColor = 'red';
-      ctx.shadowBlur = 16;
+      ctx.shadowBlur = 12;
       roundRect(ctx, this.x, 0, this.width, this.heightTop, this.radius, true);
       roundRect(ctx, this.x, this.heightTop + this.gap, this.width, H - this.heightTop - this.gap, this.radius, true);
       ctx.restore();
@@ -669,11 +607,10 @@
       for (let d of this.bloodDrops) {
         ctx.beginPath();
         ctx.fillStyle = `rgba(255,0,0,${d.opacity})`;
-        ctx.arc(d.x, d.y, 5, 0, Math.PI * 2);
+        ctx.arc(d.x, d.y, 4, 0, Math.PI * 2);
         ctx.fill();
       }
     }
-
     checkCollision(bird) {
       return (
         circleRectCollision(bird.x, bird.y, bird.radius, this.x, 0, this.width, this.heightTop) ||
@@ -700,25 +637,19 @@
   function circleRectCollision(cx, cy, cr, rx, ry, rw, rh) {
     let testX = cx;
     let testY = cy;
-
     if (cx < rx) testX = rx;
     else if (cx > rx + rw) testX = rx + rw;
-
     if (cy < ry) testY = ry;
     else if (cy > ry + rh) testY = ry + rh;
-
     let distX = cx - testX;
     let distY = cy - testY;
-    let distance = Math.sqrt(distX * distX + distY * distY);
-
-    return distance <= cr;
+    return Math.sqrt(distX * distX + distY * distY) <= cr;
   }
 
   function shakeScreen() {
-    let intensity = 6;
-    let duration = 400;
+    let intensity = 5;
+    let duration = 300;
     let start = performance.now();
-
     function animate(t) {
       let elapsed = t - start;
       if (elapsed < duration) {
@@ -739,12 +670,12 @@
     constructor(x, y) {
       this.x = x;
       this.y = y;
-      this.size = 4 + Math.random() * 5;
-      this.speedX = (Math.random() - 0.5) * 10;
-      this.speedY = - (Math.random() * 10 + 10);
-      this.gravity = 0.5;
+      this.size = 3 + Math.random() * 4;
+      this.speedX = (Math.random() - 0.5) * 8;
+      this.speedY = -(Math.random() * 8 + 8);
+      this.gravity = 0.4;
       this.opacity = 1;
-      this.fadeSpeed = 0.03 + Math.random() * 0.02;
+      this.fadeSpeed = 0.02 + Math.random() * 0.01;
     }
     update() {
       this.x += this.speedX;
@@ -756,14 +687,14 @@
       bloodCtx.beginPath();
       bloodCtx.fillStyle = `rgba(139,0,0,${this.opacity})`;
       bloodCtx.shadowColor = 'red';
-      bloodCtx.shadowBlur = 10;
+      bloodCtx.shadowBlur = 8;
       bloodCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
       bloodCtx.fill();
     }
   }
 
   function createBloodFountain(x, y) {
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 50; i++) {
       bloodParticles.push(new BloodParticle(x, y));
     }
   }
@@ -786,10 +717,10 @@
     const elapsedTime = Math.floor((performance.now() - startTime) / 1000);
     ctx.save();
     ctx.fillStyle = '#ffffff';
-    ctx.font = '36px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+    ctx.font = '30px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${elapsedTime}s`, W / 2, 30);
+    ctx.fillText(`${elapsedTime}s`, W / 2, 25);
     ctx.restore();
     return elapsedTime;
   }
@@ -801,7 +732,7 @@
     for (let i = 0; i < text.length; i++) {
       let span = document.createElement('span');
       span.textContent = text[i];
-      span.style.animationDelay = `${i * 0.15}s`;
+      span.style.animationDelay = `${i * 0.1}s`;
       loading.appendChild(span);
     }
     setTimeout(() => {
@@ -853,7 +784,7 @@
       if (ob.checkCollision(bird) && !bird.dead) {
         bird.dead = true;
         gameOver = true;
-        createBloodFountain(bird.x, bird.y);
+        createBloodFountain(bird.x, this.y);
         shakeScreen();
       }
     });
@@ -882,7 +813,7 @@
           inHomeScreen = true;
           updateLeaderboard();
         });
-      }, 2500);
+      }, 2000);
     }
   }
 
@@ -987,11 +918,6 @@
       bird.flap();
     }
   });
-
-  // قفل کردن جهت صفحه به حالت افقی
-  if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock('landscape').catch(err => console.log('Orientation lock failed:', err));
-  }
 </script>
 
 </body>
