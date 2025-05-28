@@ -12,13 +12,13 @@
   }
   #gameCanvas {
     display: block;
-    background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_3m3r.jpg') no-repeat center center;
+    background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_flhl.jpg') no-repeat center center;
     background-size: cover;
     width: 100vw;
     height: 100vh;
     touch-action: none;
     position: relative;
-    z-index: 1;
+    z-index: 0;
   }
   #rotateScreen {
     position: fixed; top: 50%; left: 50%;
@@ -31,15 +31,16 @@
     border-radius: 10px;
     border: 2px solid #ffffff;
     user-select: none;
-    z-index: 1200;
+    z-index: 1500;
     pointer-events: none;
     text-align: center;
     text-transform: uppercase;
+    display: none;
   }
   #homeScreen {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_3m3r.jpg') no-repeat center center;
-    background-size menti: cover;
+    background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_flhl.jpg') no-repeat center center;
+    background-size: cover;
     display: none;
     z-index: 1100;
     text-align: center;
@@ -239,19 +240,180 @@
   #settingsMenu input[type="range"]:focus {
     border-color: #ffffff;
   }
+  #lobbyScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('https://s6.uupload.ir/files/aaefed20-b891-11ef-9342-d96315474c53_zc76.jpg') no-repeat center center;
+    background-size: cover;
+    display: none;
+    z-index: 1100;
+    text-align: center;
+    overflow: hidden;
+  }
+  #lobbyScreen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8));
+    z-index: 1;
+  }
+  #lobbyContent {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    visibility: visible;
+  }
+  #lobbyProgressContainer {
+    width: 60%;
+    max-width: 400px;
+    height: 30px;
+    background: #222;
+    border: 3px solid #ff3f3f;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 20px rgba(255, 63, 63, 0.8);
+    margin-top: 20px;
+    z-index: 3;
+  }
+  #lobbyProgress {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(45deg, #ff0000, #ff3f3f, #ffffff, #ff3f3f, #ff0000);
+    background-size: 200%;
+    animation: gradientShift 3s linear infinite;
+    transition: width 0.1s linear;
+    z-index: 4;
+  }
+  #lobbyProgressPercentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 0 10px #ff3f3f;
+    z-index: 5;
+  }
+  #loadingScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: url('https://s6.uupload.ir/files/28ba5059824647.5a309e5d410de_flhl.jpg') no-repeat center center;
+    background-size: cover;
+    display: none;
+    z-index: 1200;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  #loadingScreen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1;
+  }
+  #loadingContent {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end; /* Align content to the bottom */
+    height: 80%; /* Leave space at the top */
+  }
+  #loadingImage {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
+    animation: floatBird 2s ease-in-out infinite;
+  }
+  #loadingBarContainer {
+    width: 60%;
+    max-width: 400px;
+    height: 25px;
+    background: #222;
+    border: 3px solid #ff3f3f;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 20px rgba(255, 63, 63, 0.8);
+    margin-bottom: 20px; /* Add space below the bar */
+  }
+  #loadingBar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(45deg, #ff0000, #ff3f3f, #ffffff, #ff3f3f, #ff0000);
+    background-size: 200%;
+    animation: gradientShift 3s linear infinite;
+    transition: width 0.5s ease-in-out;
+  }
+  #loadingBar::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 63, 63, 0.5) 10%, transparent 50%);
+    animation: particleBurst 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  @keyframes particleBurst {
+    0% { transform: scale(0); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 0; }
+  }
 </style>
 </head>
 <body>
 
 <canvas id="gameCanvas"></canvas>
-<div id="rotateScreen">PLEASE ROTATE YOUR DEVICE TO LANDSCAPE</div>
+<div id="rotateScreen">Please Rotate Your Device</div>
 <div id="homeScreen">
   <div id="homeScreenContent">
     <button id="leaderboardButton">☰</button>
-    <button id="settingsButton" title="Settings">⚙️</button>
-    <div id="gameTitle">Flappy Bird Pro</div>
+    <button id="settingsButton" title="Settings">⚙</button>
+    <div id="gameTitle">Flappy Bird</div>
     <button id="startButton">Start Game</button>
-    <img id="floatingBird" src="https://s6.uupload.ir/files/inshot_۲۰۲۵۰۵۲۳_۰۰۲۴۴۹۴۵۷_qad7.png" alt="Floating Ghost" />
+    <img id="floatingBird" src="https://s6.uupload.ir/files/inshot_۲۰۲۵۰۵۲۳_۰۰۲۴۴۹۴۵۷_9zph.png" alt="Floating Bird" />
+  </div>
+</div>
+<div id="lobbyScreen">
+  <div id="lobbyContent">
+    <img id="lobbyBird" src="https://s6.uupload.ir/files/inshot_۲۰۲۵۰۵۲۳_۰۰۲۴۴۹۴۵۷_9zph.png" alt="Lobby Bird" style="width: 100px; height: 100px; margin-bottom: 20px;">
+    <div id="lobbyProgressContainer">
+      <div id="lobbyProgress"></div>
+      <div id="lobbyProgressPercentage">0%</div>
+    </div>
+  </div>
+</div>
+<div id="loadingScreen">
+  <div id="loadingContent">
+    <img id="loadingImage" src="https://s6.uupload.ir/files/inshot_۲۰۲۵۰۵۲۳_۰۰۲۴۴۹۴۵۷_9zph.png" alt="Loading Bird" />
+    <div id="loadingBarContainer">
+      <div id="loadingBar"></div>
+    </div>
   </div>
 </div>
 <div id="loading"></div>
@@ -280,6 +442,11 @@
   const rotateScreen = document.getElementById('rotateScreen');
   const homeScreen = document.getElementById('homeScreen');
   const startButton = document.getElementById('startButton');
+  const lobbyScreen = document.getElementById('lobbyScreen');
+  const lobbyProgress = document.getElementById('lobbyProgress');
+  const lobbyProgressPercentage = document.getElementById('lobbyProgressPercentage');
+  const loadingScreen = document.getElementById('loadingScreen');
+  const loadingBar = document.getElementById('loadingBar');
   const loading = document.getElementById('loading');
   const bloodCanvas = document.getElementById('bloodOverlay');
   const bloodCtx = bloodCanvas.getContext('2d');
@@ -301,85 +468,78 @@
   let gameOver = false;
   let bird;
   let obstacles = [];
-  let speed = 2.5; // Default: Normal
+  let speed = 2.5;
   let score = 0;
   let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
   let difficultyIncrement = 0;
-  let maxDifficulty = 3; // Default: Normal
-  let minGap = 80; // Default: Normal
-  let loadingDuration = 3000;
+  let maxDifficulty = 3;
+  let minGap = 100;
+  const loadingDuration = 3000;
   let bloodParticles = [];
   let birdImage = new Image();
-  birdImage.src = 'https://s6.uupload.ir/files/inshot_۲۰۲۵۰۵۲۳_۰۰۲۴۴۹۴۵۷_qad7.png';
-  let startTime = 0;
+  birdImage.src = 'https://s6.uupload.ir/files/inshot_۲۰۲۵۰۵۲۳_۰۰۲۴۴۹۴۵۷_9zph.png';
   let inHomeScreen = false;
-  let isGameActive = false;
+  let lobbyProgressInterval;
 
-  // Default settings
   const defaultSettings = {
-    birdSpeed: '2', // Normal
-    fallFlySpeed: '2', // Normal
-    gameDifficulty: '3' // Normal
+    birdSpeed: '2',
+    fallFlySpeed: '2',
+    gameDifficulty: '3'
   };
 
-  // Load settings from localStorage or use defaults
   let settings = JSON.parse(localStorage.getItem('flappyBirdSettings')) || defaultSettings;
   applySettings();
 
   function applySettings() {
-    // Bird Speed
     switch (parseInt(settings.birdSpeed)) {
-      case 1: speed = 1.5; break; // Slow
-      case 2: speed = 2.5; break; // Normal
-      case 3: speed = 3.5; break; // Fast
+      case 1: speed = 2.0; break;
+      case 2: speed = 2.5; break;
+      case 3: speed = 3.0; break;
     }
     birdSpeedSelect.value = settings.birdSpeed;
 
-    // Fall/Fly Speed
     if (bird) {
       switch (parseInt(settings.fallFlySpeed)) {
         case 1:
-          bird.gravity = 0.2;
-          bird.lift = -5;
-          break; // Slow
+          bird.gravity = 0.15;
+          bird.lift = -3.5;
+          break;
         case 2:
-          bird.gravity = 0.3;
-          bird.lift = -6;
-          break; // Normal
+          bird.gravity = 0.2;
+          bird.lift = -4.0;
+          break;
         case 3:
-          bird.gravity = 0.4;
-          bird.lift = -7;
-          break; // Fast
+          bird.gravity = 0.25;
+          bird.lift = -4.5;
+          break;
       }
     }
     fallFlySpeedSelect.value = settings.fallFlySpeed;
 
-    // Game Difficulty
     switch (parseInt(settings.gameDifficulty)) {
       case 1:
         maxDifficulty = 1;
-        minGap = 100;
-        break; // Very Easy
+        minGap = 120;
+        break;
       case 2:
         maxDifficulty = 2;
-        minGap = 90;
-        break; // Easy
+        minGap = 110;
+        break;
       case 3:
         maxDifficulty = 3;
-        minGap = 80;
-        break; // Normal
+        minGap = 100;
+        break;
       case 4:
         maxDifficulty = 4;
-        minGap = 70;
-        break; // Hard
+        minGap = 90;
+        break;
       case 5:
         maxDifficulty = 5;
-        minGap = 60;
-        break; // Very Hard
+        minGap = 80;
+        break;
     }
     gameDifficultySelect.value = settings.gameDifficulty;
 
-    // Save settings
     localStorage.setItem('flappyBirdSettings', JSON.stringify(settings));
   }
 
@@ -399,24 +559,28 @@
   resize();
 
   function checkOrientation() {
-    if (window.innerWidth < window.innerHeight) {
-      rotateScreen.style.display = 'block';
-      homeScreen.style.display = 'none';
-      canvas.style.display = 'none';
-      bloodCanvas.style.display = 'none';
-      leaderboard.style.display = 'none';
-      settingsMenu.style.display = 'none';
-      return false;
-    } else {
-      rotateScreen.style.display = 'none';
-      if (!gameStarted && !inHomeScreen) {
-        homeScreen.style.display = 'block';
-        inHomeScreen = true;
+    setTimeout(() => {
+      const isLandscape = window.matchMedia("(orientation: landscape)").matches || window.innerWidth >= window.innerHeight;
+      console.log('Checking orientation:', isLandscape ? 'Landscape' : 'Portrait');
+      if (!isLandscape) {
+        rotateScreen.style.display = 'block';
+        homeScreen.style.display = 'none';
+        lobbyScreen.style.display = 'none';
+        loadingScreen.style.display = 'none';
+        canvas.style.display = 'none';
+        bloodCanvas.style.display = 'none';
+        leaderboard.style.display = 'none';
+        settingsMenu.style.display = 'none';
+      } else {
+        rotateScreen.style.display = 'none';
+        canvas.style.display = 'block';
+        bloodCanvas.style.display = 'block';
+        if (!gameStarted) {
+          homeScreen.style.display = 'block';
+          inHomeScreen = true;
+        }
       }
-      canvas.style.display = 'block';
-      bloodCanvas.style.display = 'block';
-      return true;
-    }
+    }, 100);
   }
 
   class Bird {
@@ -425,16 +589,14 @@
       this.x = W / 4;
       this.y = H / 2;
       this.velocity = 0;
-      this.gravity = 0.3; // Default: Normal
-      this.lift = -6; // Default: Normal
-      this.isMoving = false;
+      this.gravity = 0.2;
+      this.lift = -4.0;
       this.dead = false;
-      applySettings(); // Apply settings for gravity and lift
+      applySettings();
     }
     update() {
-      if (!this.isMoving) return;
       this.velocity += this.gravity;
-      this.velocity *= 0.95;
+      this.velocity *= 0.92;
       this.y += this.velocity;
 
       if (this.y + this.radius > H) {
@@ -451,12 +613,8 @@
       }
     }
     flap() {
-      if (this.dead) return;
-      this.velocity += this.lift;
-      if (!isGameActive) {
-        isGameActive = true;
-        this.isMoving = true;
-        obstacles.forEach(ob => ob.isMoving = true);
+      if (!this.dead) {
+        this.velocity = this.lift;
       }
     }
     draw() {
@@ -476,29 +634,25 @@
   }
 
   class Obstacle {
-    constructor(x, heightTop, gap) {
+    constructor(x) {
       this.x = x;
       this.width = 60;
-      this.heightTop = heightTop;
-      this.gap = gap;
-      this.speed = speed + (Math.random() * 0.3 - 0.15);
+      this.gap = minGap;
+      this.heightTop = Math.random() * (H - this.gap - 200) + 100;
+      this.speed = speed;
       this.radius = 14;
       this.bloodDrops = [];
-      this.isMoving = false;
     }
-
     update() {
-      if (!this.isMoving) return;
       this.x -= this.speed;
 
       if (this.x + this.width < 0) {
-        this.x = W + 400 + Math.random() * 200;
-        let baseHeight = Math.random() * (H - this.gap - 100) + 50;
-        this.heightTop = Math.min(baseHeight + difficultyIncrement * 10, H - this.gap - 40);
-        this.gap = Math.max(minGap, 120 - difficultyIncrement * 5);
-        this.speed = Math.min(4, speed + difficultyIncrement * 0.2);
+        this.x = W + 300;
+        this.gap = minGap;
+        this.heightTop = Math.random() * (H - this.gap - 200) + 100;
+        this.speed = speed;
         score++;
-        if (score % 3 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement += 0.5;
+        if (score % 5 === 0 && difficultyIncrement < maxDifficulty) difficultyIncrement += 0.2;
       }
 
       if (gameOver && this.x < bird.x + bird.radius && this.x + this.width > bird.x - bird.radius) {
@@ -512,7 +666,6 @@
         if (d.opacity <= 0) this.bloodDrops.splice(i, 1);
       }
     }
-
     spawnBloodDrop() {
       if (this.bloodDrops.length < 8 && Math.random() < 0.3) {
         this.bloodDrops.push({
@@ -523,7 +676,6 @@
         });
       }
     }
-
     draw() {
       ctx.save();
       ctx.fillStyle = '#8B0000';
@@ -540,7 +692,6 @@
         ctx.fill();
       }
     }
-
     checkCollision(bird) {
       return (
         circleRectCollision(bird.x, bird.y, bird.radius, this.x, 0, this.width, this.heightTop) ||
@@ -649,22 +800,20 @@
   }
 
   function drawTimer() {
-    if (!gameStarted || gameOver || !isGameActive) return;
-    const elapsedTime = Math.floor((performance.now() - startTime) / 1000);
+    if (!gameStarted || gameOver) return;
     ctx.save();
     ctx.fillStyle = '#ffffff';
     ctx.font = '36px "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${elapsedTime}s`, W / 2, 30);
+    ctx.fillText(`${score}`, W / 2, 30);
     ctx.restore();
-    return elapsedTime;
   }
 
   function showLoadingAnimation(callback) {
     loading.style.display = 'block';
     loading.innerHTML = '';
-    const text = 'LOADING';
+    const text = 'LOADING...';
     for (let i = 0; i < text.length; i++) {
       let span = document.createElement('span');
       span.textContent = text[i];
@@ -675,6 +824,18 @@
       loading.style.display = 'none';
       callback();
     }, loadingDuration);
+  }
+
+  function checkInternetConnection() {
+    return new Promise((resolve) => {
+      if (!navigator.onLine) {
+        resolve(false);
+        return;
+      }
+      fetch('https://www.google.com/favicon.ico', { mode: 'no-cors' })
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
+    });
   }
 
   function updateLeaderboard() {
@@ -690,29 +851,74 @@
     gameOver = false;
     score = 0;
     difficultyIncrement = 0;
-    startTime = performance.now();
     homeScreen.style.display = 'none';
+    lobbyScreen.style.display = 'none';
+    loadingScreen.style.display = 'none';
     leaderboard.style.display = 'none';
     settingsMenu.style.display = 'none';
     inHomeScreen = false;
-    isGameActive = false;
 
-    let startX = W + 400;
+    let startX = W + 300;
     for (let i = 0; i < 4; i++) {
-      let gapSize = 120;
-      let hTop = Math.random() * (H - gapSize - 100) + 50;
-      obstacles.push(new Obstacle(startX + i * 400, hTop, gapSize));
+      obstacles.push(new Obstacle(startX + i * 300));
     }
     updateLeaderboard();
+  }
+
+  function showLobby() {
+    console.log('Showing lobby screen');
+    homeScreen.style.display = 'none';
+    lobbyScreen.style.display = 'block';
+    lobbyProgress.style.width = '0%';
+    lobbyProgressPercentage.textContent = '0%';
+    lobbyProgressPercentage.style.display = 'block';
+    lobbyProgress.style.display = 'block';
+
+    let progress = 0;
+    let isConnected = true;
+
+    lobbyProgressInterval = setInterval(async () => {
+      if (!isConnected) {
+        isConnected = await checkInternetConnection();
+        if (!isConnected) {
+          lobbyProgressPercentage.textContent = 'No Internet!';
+          return;
+        } else {
+          lobbyProgressPercentage.textContent = `${progress}%`;
+        }
+      }
+
+      if (isConnected) {
+        progress += 1;
+        lobbyProgress.style.width = `${progress}%`;
+        lobbyProgressPercentage.textContent = `${progress}%`;
+
+        if (progress >= 100) {
+          clearInterval(lobbyProgressInterval);
+          showCustomLoading();
+        }
+      }
+    }, 100);
+  }
+
+  function showCustomLoading() {
+    lobbyScreen.style.display = 'none';
+    loadingScreen.style.display = 'flex';
+    loadingBar.style.width = '0%';
+    setTimeout(() => {
+      loadingBar.style.width = '100%';
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+        startGame();
+        gameLoop();
+      }, 2500);
+    }, 100);
   }
 
   function gameLoop() {
     ctx.clearRect(0, 0, W, H);
 
-    const elapsedTime = drawTimer();
-    if (elapsedTime >= 20 && difficultyIncrement < maxDifficulty) {
-      difficultyIncrement = Math.min(maxDifficulty, difficultyIncrement + (elapsedTime - 20) * 0.02);
-    }
+    drawTimer();
 
     obstacles.forEach(ob => {
       ob.update();
@@ -720,7 +926,7 @@
       if (ob.checkCollision(bird) && !bird.dead) {
         bird.dead = true;
         gameOver = true;
-        createBloodFountain(bird.x, bird.y);
+        createBloodFountain(bird.x, this.y);
         shakeScreen();
       }
     });
@@ -755,16 +961,14 @@
 
   startButton.addEventListener('click', () => {
     if (inHomeScreen) {
-      startGame();
-      gameLoop();
+      showLobby();
     }
   });
 
   startButton.addEventListener('touchstart', e => {
     e.preventDefault();
     if (inHomeScreen) {
-      startGame();
-      gameLoop();
+      showLobby();
     }
   });
 
@@ -838,21 +1042,15 @@
     applySettings();
   });
 
-  let orientationChanged = false;
   window.addEventListener('resize', () => {
     resize();
-    if (checkOrientation() && !orientationChanged) {
-      orientationChanged = true;
-      homeScreen.style.display = 'block';
-      inHomeScreen = true;
-    }
+    checkOrientation();
   });
 
-  if (checkOrientation()) {
-    orientationChanged = true;
-    homeScreen.style.display = 'block';
-    inHomeScreen = true;
-  }
+  window.addEventListener('orientationchange', () => {
+    resize();
+    checkOrientation();
+  });
 
   canvas.addEventListener('touchstart', e => {
     e.preventDefault();
@@ -861,12 +1059,14 @@
     }
   });
 
-  canvas.addEventListener('mousedown', e => {
+  canvas.addEventListener('mousedown', () => {
     if (!bird.dead && gameStarted) {
       bird.flap();
     }
   });
+
+  checkOrientation();
 </script>
 
 </body>
-  </html>
+</html>
